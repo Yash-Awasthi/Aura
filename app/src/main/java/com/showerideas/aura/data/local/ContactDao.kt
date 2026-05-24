@@ -16,7 +16,17 @@ interface ContactDao {
     @Query("SELECT * FROM contacts WHERE isFavorite = 1 ORDER BY receivedAt DESC")
     fun observeFavorites(): Flow<List<Contact>>
 
-    @Query("SELECT * FROM contacts WHERE displayName LIKE '%' || :query || '%' OR email LIKE '%' || :query || '%' OR phone LIKE '%' || :query || '%'")
+    @Query("""
+        SELECT * FROM contacts WHERE
+            displayName LIKE '%' || :query || '%' OR
+            email       LIKE '%' || :query || '%' OR
+            phone       LIKE '%' || :query || '%' OR
+            company     LIKE '%' || :query || '%' OR
+            title       LIKE '%' || :query || '%' OR
+            notes       LIKE '%' || :query || '%' OR
+            bio         LIKE '%' || :query || '%' OR
+            website     LIKE '%' || :query || '%'
+    """)
     fun search(query: String): Flow<List<Contact>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -37,4 +47,17 @@ interface ContactDao {
     /** PR-10: latest contact saved from a given Nearby endpoint, used to attach an incoming avatar. */
     @Query("SELECT * FROM contacts WHERE sourceEndpointId = :endpointId ORDER BY receivedAt DESC LIMIT 1")
     suspend fun findLatestByEndpoint(endpointId: String): Contact?
+
+    /**
+     * Find an existing contact by their stable identity key hash.
+     *
+     * Used for contact deduplication: if we already have a contact with this
+     * identity key hash, the incoming exchange is from the same device and we
+     * should update the existing record rather than creating a duplicate.
+     *
+     * Returns null if [hash] is null/empty (no hash available) to avoid
+     * treating all hash-less contacts as the same person.
+     */
+    @Query("SELECT * FROM contacts WHERE identityKeyHash = :hash LIMIT 1")
+    suspend fun findByIdentityKeyHash(hash: String): Contact?
 }

@@ -30,9 +30,22 @@ object PayloadValidator {
     /** How often [purgeNonces] gets called by the service-side coroutine. */
     const val PURGE_INTERVAL_MS: Long = 300_000L // 5 minutes
 
-    /** Thread-safe deduplication set. */
+    /**
+     * Thread-safe deduplication set. Bounded to [MAX_NONCE_CACHE_SIZE] to
+     * defend against heap-exhaustion under a sustained flood attack: a rogue
+     * peer (or room-mode host) that sends thousands of unique-nonce profiles
+     * per minute would otherwise grow this set without bound until the 5-minute
+     * purge cycle fires. When the cap is hit we force-purge and log a warning.
+     */
     private val recentNonces: MutableSet<String> =
         Collections.synchronizedSet(mutableSetOf())
+
+    /**
+     * Upper bound on the nonce deduplication cache between purge cycles.
+     * 1 000 covers ~16 hours of exchanges at one per minute — well above any
+     * legitimate room session. Exceeding this is a strong indicator of a flood.
+     */
+    private const val MAX_NONCE_CACHE_SIZE = 1_000
 
     /**
      * Prompt-6 / Issue-3: per-field maximum character lengths.
@@ -49,8 +62,17 @@ object PayloadValidator {
      */
     const val MAX_FIELD_LENGTH: Int = 500
 
-    /** Friendly field names for logging. */
-    private val CAPPED_FIELDS = setOf("displayName", "email", "phone", "note")
+    /**
+     * All user-visible string fields that a peer can populate in their profile map.
+     * Every key from [com.showerideas.aura.model.Profile.toShareableMap] is listed here
+     * so a crafted peer cannot cause unbounded heap allocation by sending a multi-MB
+     * value in any field that arrives through the Nearby Connections wire format.
+     * Previously "note" was listed but it is a dead key — the wire format uses "bio".
+     */
+    private val CAPPED_FIELDS = setOf(
+        "displayName", "phone", "email",
+        "company", "title", "website", "bio"
+    )
 
     sealed class ValidationResult {
         object Ok : ValidationResult()
@@ -76,6 +98,13 @@ object PayloadValidator {
         val nonce = map["_nonce"] ?: return ValidationResult.MissingNonce
         // .add returns false if the nonce was already present -> replay.
         if (!recentNonces.add(nonce)) return ValidationResult.ReplayedNonce
+        // Flood-attack guard: if the cache has grown past the cap, force-purge
+        // immediately. Legitimate sessions produce at most a handful of nonces;
+        // hitting MAX_NONCE_CACHE_SIZE is only possible under active flooding.
+        if (recentNonces.size > MAX_NONCE_CACHE_SIZE) {
+            Timber.w("Nonce cache exceeded $MAX_NONCE_CACHE_SIZE entries — force-purging (flood attack?)")
+            purgeNonces()
+        }
         // Prompt-6 / Issue-3: cap individual string fields to prevent a
         // crafted peer from allocating unbounded heap via long field values.
         for (field in CAPPED_FIELDS) {
