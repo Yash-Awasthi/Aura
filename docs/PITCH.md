@@ -143,9 +143,9 @@ Differential privacy ε=1.0   — analytics telemetry with formal privacy budget
 ### Codebase State
 
 ```
-Version:          4.0.0 (shipped 2026-05-26, tag 90e3cbb)
-Kotlin files:     291 across app / wearos / automotive / desktop / ios modules
-Test files:       75 unit + 16 instrumented + 36 iOS AuraCore
+Version:          5.7 (2026-05-27, commit ed5e822)
+Kotlin files:     328 across app / wearos / automotive / desktop / ios modules
+Test files:       90+ unit + 16 instrumented + 36 iOS AuraCore
 Coverage floor:   JaCoCo 60% branch coverage enforced in CI
 Localization:     365 strings × 7 languages
 Distribution:     F-Droid reproducible build (PR #74 merged), signed AAB sideload
@@ -156,7 +156,7 @@ CI:               GitHub Actions — build / lint / test / sign / release pipeli
 
 | Platform | Status | Key features |
 |---|---|---|
-| Android (main) | Shipped v4.0.0 | Full exchange flow, all transports |
+| Android (main) | Shipped v5.7 | Full exchange flow, all transports, ZK-SNARK gesture proofs, DIDComm v2, MPC audit signing |
 | Wear OS | Shipped | Glance tile, wrist-raise trigger, SAS PIN, HRV liveness |
 | Android Auto | Shipped | 4-screen voice-gated exchange flow |
 | iOS AuraCore | Scaffold shipped | NFC + TOFU + PQXDH, 36 tests |
@@ -179,11 +179,12 @@ Harvest-now-decrypt-later attacks are already in progress against government and
 
 ## Traction
 
-- v4.0.0 shipped with 66 implementation tasks complete across 291 Kotlin source files
+- v5.7 shipped with 118+ implementation tasks complete across 328 Kotlin source files
 - Full post-quantum cryptographic stack — ML-KEM-768, ML-DSA-65, PQXDH, Double Ratchet, MLS — all production-wired, not stubs
+- ZK-SNARK Groth16 gesture proofs, AR/XR exchange overlays, DIDComm v2 + ISO 18013-7 mDL, MPC 2-of-3 threshold audit signing — shipped in v5.6
+- Decentralized identity (did:key, did:peer:2, did:web) and ML Kit OCR business card import — graduated from R&D in v5.7
 - F-Droid reproducible build verified and submitted
 - CI/CD pipeline with signed APK/AAB release artifacts on every tag
-- 16-item R&D pipeline already specified and backlog-ready (gesture enrollment system, NFC expansion, behavioral model training, federated learning scaffold)
 - Zero Play Store dependency — distribution is fully self-sovereign
 
 ---

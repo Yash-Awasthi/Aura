@@ -1,6 +1,6 @@
 # Intent-fulfilment audit
 
-> Every promise the project makes to a user, a reviewer, or the Play Store is listed below and scored **green / yellow / red** against the code as it stands on `main` after the v1.0.0 release ([`v1.0.0`](https://github.com/showerideas/Aura/releases/tag/v1.0.0)).
+> Every promise the project makes to a user or a reviewer is listed below and scored **green / yellow / red** against the code as it stands on `main` at the v5.7 baseline.
 
 | Legend | Meaning |
 |---|---|
@@ -10,7 +10,7 @@
 
 ---
 
-## 1. Headline claims (from `README.md` and `STORE_LISTING.md`)
+## 1. Headline claims (from `README.md`)
 
 | # | Claim | Status | Evidence |
 |---|---|---|---|
@@ -29,7 +29,7 @@
 | H13 | "Favourites and notes" | 🟢 | `Contact.favorite`, `Contact.note`, DAO setters, UI in `ContactDetailBottomSheet`. |
 | H14 | "Full accessibility audit: TalkBack, large fonts, high-contrast theme" | 🟢 | content descriptions, focusable targets, `Theme.Aura` checked at AA contrast. |
 | H15 | "Multilingual: English, Hindi, Spanish, French, German, Japanese, Korean, Simplified Chinese" | 🟢 | All 7 promised non-English locales now ship a curated stub of high-impact strings in `values-XX/`. Non-stubbed keys fall back to English. Tracked in [`features/20-localization.md`](features/20-localization.md). |
-| H16 | "Privacy policy: <https://showerideas.app/aura/privacy>" | 🟡 | The Markdown is committed (`PRIVACY_POLICY.md`) but the URL has not been hosted yet — `STORE_LISTING.md` calls this out as a TODO. |
+| H16 | "Privacy policy: <https://showerideas.app/aura/privacy>" | 🟡 | `PRIVACY_POLICY.md` committed and deployed via `gh-pages.yml`. URL hosted at the linked address. |
 | H17 | "MIT licensed" | 🟢 | `LICENSE` shipped in PR #36. |
 
 ---
@@ -66,39 +66,26 @@
 ## 3. Cross-cutting status
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{
-  'fontFamily':'ui-monospace, SFMono-Regular, Menlo, Monaco, monospace',
-  'fontSize':'14px',
-  'primaryColor':'#0EA5E9',
-  'primaryTextColor':'#0F172A',
-  'primaryBorderColor':'#075985',
-  'lineColor':'#475569',
-  'clusterBkg':'#F8FAFC',
-  'clusterBorder':'#CBD5E1'
-},'flowchart':{'curve':'basis','nodeSpacing':28,'rankSpacing':34,'padding':12}}}%%
 flowchart LR
     subgraph DONE["✅&nbsp;Delivered&nbsp;in&nbsp;v1.0.0"]
         direction TB
         d1["Crypto<br/>ECDH&nbsp;+&nbsp;AES-GCM"]:::ok
         d2["Gesture<br/>+&nbsp;biometric"]:::ok
-        d3["Room&nbsp;v2<br/>+&nbsp;migrations"]:::ok
+        d3["Room&nbsp;v12<br/>+&nbsp;migrations"]:::ok
         d4["Blocklist<br/>+&nbsp;replay"]:::ok
         d5["QR&nbsp;+&nbsp;Room<br/>+&nbsp;Avatar"]:::ok
         d6["Onboarding<br/>+&nbsp;A11y"]:::ok
         d7["CI&nbsp;+&nbsp;R8<br/>+&nbsp;APK"]:::ok
         d8["MIT<br/>LICENSE"]:::ok
     end
-    subgraph TODO["🛠️&nbsp;Roadmap"]
+    subgraph DONE2["✅&nbsp;Shipped&nbsp;post-v1.0"]
         direction TB
-        g1["7&nbsp;translated<br/>values-xx/"]:::warn
+        g1["7&nbsp;translated<br/>values-xx/"]:::ok
         g2["Emulator&nbsp;CI<br/>connectedTest"]:::ok
-        g3["Signed&nbsp;.aab<br/>→&nbsp;Play&nbsp;Console"]:::ok
+        g3["Signed&nbsp;AAB<br/>direct&nbsp;sideload"]:::ok
         g4["Hosted<br/>privacy&nbsp;URL"]:::ok
     end
-    DONE -->|"v1.1"| g1
-    DONE -->|"v1.2"| g2
-    DONE -->|"v1.3"| g3
-    DONE -->|"v1.3"| g4
+    DONE --> DONE2
 
     classDef ok fill:#22C55E,color:#FFFFFF,stroke:#166534,stroke-width:2px
     classDef warn fill:#F59E0B,color:#1F2937,stroke:#92400E,stroke-width:2px
@@ -114,7 +101,7 @@ flowchart LR
 | ~~4~~ | ~~Host the privacy policy at `https://showerideas.app/aura/privacy` and remove the TODOs in `PRIVACY_POLICY.md` + `STORE_LISTING.md`.~~ | ✅ **Shipped in v1.3.0** — `gh-pages.yml` deploys policy on every push to main; `privacy_url` string added as `translatable="false"`; TODO banners removed. | — |
 | ~~5~~ | ~~Wire the release-signing pipeline to a real Play Console upload step using the same env-var contract.~~ | ✅ **Shipped in v1.3.0** — `upload-to-play` job in `ci.yml` uses `KEYSTORE_BASE64` secret + `r0adkll/upload-google-play@v1`; uploads to internal track on every push to main; skipped when keystore secret absent. | — |
 
-None of these blocked **[v1.0.0 — first public release](https://github.com/showerideas/Aura/releases/tag/v1.0.0)**; they are *post-Play-Store-submission* items, tracked in the top-level [`README.md` → Roadmap](../README.md#-roadmap).
+All items above are complete. See [`ROADMAP.md`](../ROADMAP.md) for the active R&D pipeline.
 
 ---
 
@@ -134,7 +121,7 @@ Post-v1.0 static analysis and fix pass. Evidence-based, no unverified claims.
 | A8 | `PayloadValidator` missing string length bounds | 🟢 FIXED | `MAX_FIELD_LENGTH=500` enforced for displayName/email/phone/note; pre-decryption `MAX_PROFILE_PAYLOAD_BYTES=65536` gate added (, ). | — |
 | A9 | `gestureVerified` is process-wide companion object | 🟢 FIXED | `gestureVerified` is an `@Volatile` instance variable on `NearbyExchangeService` (line 225), not a companion object. Per-instance gate — correctly scoped. | — |
 | A10 | TOFU first-meet MITM gap | 🟢 FIXED | `SasVerifier` implemented and UI fully wired: `ExchangeFragment.showSasDialog()` fires on `State.VERIFYING`; `ExchangeSession.sasPin` carries the 6-digit code; `ACTION_CONFIRM_SAS` / `ACTION_ABORT_SAS` round-trips confirmed in `NearbyExchangeService`. | — |
-| A11 | Volume-button wake works on all devices | ✅ RESOLVED | Volume-button trigger removed entirely — OEM skin interception made it unreliable on >50% of devices. Activation is now in-app (tap Exchange) + QS tile. See [docs/VOLUME_BUTTON_RELIABILITY.md](VOLUME_BUTTON_RELIABILITY.md) for history. |
+| A11 | Volume-button wake works on all devices | ✅ RESOLVED | Volume-button trigger removed entirely — OEM skin interception made it unreliable on >50% of devices. Activation is now in-app (tap Exchange) + QS tile. |
 | A12 | APK committed to source | 🔴 **FIXED** | `app/release/*.apk` removed from git history; `app/release/` added to `.gitignore` (). | — |
 | A13 | Wire-protocol scenarios tested | 🟢 FIXED | `WireProtocolTest.kt` (17 JVM tests), `FakeNearbyTransport.kt`, `SasVerifierTest.kt` (17 tests), `NearbyTransport` interface added (, ). | Full service integration tests (requires Android runtime) deferred to v1.2 emulator CI. |
 | A14 | Test count claim in README | 🔴 **CORRECTED** | Was "32 unit + 4 instrumented" — actual 97 unit + 21 instrumented. Fixed (). | — |
