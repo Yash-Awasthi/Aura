@@ -29,30 +29,30 @@ class AutoModeGestureDisableTest {
     @Test
     fun `gesture disabled flag is false by default`() {
         assertFalse(
-            prefs.getBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, false)
+            prefs.getBoolean("auto_mode_gesture_disabled", false)
         )
     }
 
     @Test
     fun `writing disabled flag to true reflects in prefs`() {
         prefs.edit()
-            .putBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, true)
+            .putBoolean("auto_mode_gesture_disabled", true)
             .commit()
         assertTrue(
-            prefs.getBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, false)
+            prefs.getBoolean("auto_mode_gesture_disabled", false)
         )
     }
 
     @Test
     fun `clearing disabled flag restores false`() {
         prefs.edit()
-            .putBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, true)
+            .putBoolean("auto_mode_gesture_disabled", true)
             .commit()
         prefs.edit()
-            .putBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, false)
+            .putBoolean("auto_mode_gesture_disabled", false)
             .commit()
         assertFalse(
-            prefs.getBoolean(AuraCarAppService.PREF_AUTO_MODE_GESTURE_DISABLED, false)
+            prefs.getBoolean("auto_mode_gesture_disabled", false)
         )
     }
 }

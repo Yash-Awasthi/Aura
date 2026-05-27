@@ -114,7 +114,7 @@ class NoiseChannelTest {
         responder.readMessage3(initiator.writeMessage3())
 
         val ct = initiator.transportEncrypt("secret".toByteArray())
-        val tampered = ct.copyOf().also { it[0] = it[0].xor(0xFF.toByte()) }
+        val tampered = ct.copyOf().also { it[0] = (it[0].toInt() xor 0xFF).toByte() }
 
         var threw = false
         try { responder.transportDecrypt(tampered) } catch (_: Exception) { threw = true }

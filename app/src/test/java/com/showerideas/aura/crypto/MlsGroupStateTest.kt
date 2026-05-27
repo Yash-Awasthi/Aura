@@ -89,7 +89,7 @@ class MlsGroupStateTest {
         group1.initialize("alice")
         val commitSecret = ByteArray(32) { 7 }
         group1.commit(addedId = "dave", commitSecret = commitSecret)
-        val badTag = group1.confirmationTag().also { it[0] = it[0].xor(0xFF.toByte()) }
+        val badTag = group1.confirmationTag().also { it[0] = (it[0].toInt() xor 0xFF).toByte() }
 
         val group2 = MlsGroupState("room-004")
         group2.initialize("alice")

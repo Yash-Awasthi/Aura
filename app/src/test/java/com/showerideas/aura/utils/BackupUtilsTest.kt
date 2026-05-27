@@ -87,7 +87,7 @@ class BackupUtilsTest {
         BackupUtils.export(sampleContacts, passphrase, buf)
         val bytes = buf.toByteArray()
         // Flip a byte in the ciphertext region (after 4+1+16+12 = 33 byte header)
-        bytes[33] = bytes[33].xor(0xFF.toByte())
+        bytes[33] = (bytes[33].toInt() xor 0xFF).toByte()
         BackupUtils.restore(passphrase, ByteArrayInputStream(bytes))
     }
 
