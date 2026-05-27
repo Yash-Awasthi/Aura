@@ -151,7 +151,30 @@ Both phones display the same number. The user detects a MITM by comparing the nu
 
 ---
 
-## 7. Audit / disclosure
+## 7. MPC threshold audit signing (v5.6)
+
+Enterprise audit exports are protected by a 2-of-3 Shamir threshold signing scheme
+(`ShamirSecretSharing.kt`, Task 112). A single administrator device cannot forge an audit log.
+
+**Key ceremony:** An enterprise admin performs a key ceremony that:
+1. Generates a 256-bit ECDSA P-256 audit signing key pair.
+2. Shamir-splits the private key into 3 shares.
+3. Distributes one share each to 3 designated administrator AURA devices via encrypted Nearby channel.
+4. Destroys the master private key immediately.
+
+**Co-signing:** Any audit export requires two of the three admin devices to co-sign.
+The requesting device sends a DIDComm request to a second admin device. That device
+approves via gesture verification, sends its share back encrypted, and the requesting
+device reconstructs the signing key in memory, signs, then zeroes the key bytes immediately.
+
+**Privacy Pass rate limiting (v5.6):** Relay API calls attach a Privacy Pass v2 token
+(`PrivacyPassClient.kt`, Task 114) in a `Privacy-Token` header per RFC 9576. The relay
+validates tokens against the issuer's public key to enforce per-device quotas without
+linking requests to device identity (unlinkability guarantee from blind signatures).
+
+---
+
+## 8. Audit / disclosure
 
 If you find a security issue please **do not** open a public issue. Open a private [GitHub Security Advisory](https://github.com/showerideas/Aura/security/advisories/new) with a description and ideally a reproduction. We will acknowledge within 72 hours.
 
