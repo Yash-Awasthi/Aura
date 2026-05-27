@@ -1,10 +1,8 @@
 package com.showerideas.aura.relay.privacypass
 
 import android.content.Context
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
 import kotlinx.coroutines.runBlocking
+import org.mockito.kotlin.mock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -32,11 +30,6 @@ class PrivacyPassClientTest {
 
     @Before
     fun setUp() {
-        // Use a real in-memory SharedPreferences via a mock Context
-        val prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(
-            mockk<Context>(relaxed = true)
-        )
-        // Cannot easily mock final SharedPreferences — use a simple wrapper instead
         tokenStore = InMemoryTokenStore()
         client = PrivacyPassClient(tokenStore)
     }
@@ -137,7 +130,7 @@ class PrivacyPassClientTest {
      * Simple in-memory [TokenStore] replacement for unit tests
      * (avoids Android SharedPreferences dependency).
      */
-    private class InMemoryTokenStore : TokenStore(mockk(relaxed = true)) {
+    private class InMemoryTokenStore : TokenStore(mock<Context>()) {
         private val queue = ArrayDeque<PrivacyPassToken>()
 
         override val count: Int get() = synchronized(queue) { queue.size }

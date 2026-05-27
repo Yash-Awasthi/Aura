@@ -118,7 +118,7 @@ class SealedEnvelopeTest {
 
         val envelope = SealedEnvelope.wrap("data".toByteArray(), senderPriv, senderPub, recipPub).also { env ->
             // Flip a byte in the ciphertext portion
-            env[env.size - 10] = env[env.size - 10].xor(0xFF.toByte())
+            env[env.size - 10] = (env[env.size - 10].toInt() xor 0xFF).toByte()
         }
         SealedEnvelope.unwrap(envelope, recipPriv, recipPub)
     }

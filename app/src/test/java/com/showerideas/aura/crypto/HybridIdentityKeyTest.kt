@@ -36,7 +36,7 @@ class HybridIdentityKeyTest {
     @Test
     fun `corrupted p256 sig fails verification`() {
         val sig = key.sign(testData)
-        val badP256 = sig.p256Sig.copyOf().also { it[0] = it[0].xor(0xFF.toByte()) }
+        val badP256 = sig.p256Sig.copyOf().also { it[0] = (it[0].toInt() xor 0xFF).toByte() }
         val badSig = HybridSignature(badP256, sig.mlDsaSig)
         val ok = key.verify(testData, badSig, key.ecPublicKey(), key.mlDsaPublicKey())
         assertFalse("Corrupted P-256 sig must not verify", ok)

@@ -22,7 +22,7 @@ import javax.inject.Singleton
  * See: ROADMAP §Task 114
  */
 @Singleton
-class TokenStore @Inject constructor(
+open class TokenStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {

@@ -45,7 +45,7 @@ private val Context.classifierDataStore by preferencesDataStore("aura_gesture_cl
  * @see CameraHandEmbedder.EMBEDDING_SIZE
  */
 @Singleton
-class GestureClassifier @Inject constructor(
+open class GestureClassifier @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {

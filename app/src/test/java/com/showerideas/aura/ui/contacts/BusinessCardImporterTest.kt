@@ -1,7 +1,7 @@
 package com.showerideas.aura.ui.contacts
 
 import android.content.Context
-import io.mockk.mockk
+import org.mockito.kotlin.mock
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -22,7 +22,7 @@ class BusinessCardImporterTest {
 
     @Before
     fun setUp() {
-        importer = BusinessCardImporter(mockk<Context>(relaxed = true))
+        importer = BusinessCardImporter(mock<Context>())
     }
 
     // ── Email extraction ──────────────────────────────────────────────────────

@@ -1,7 +1,6 @@
 package com.showerideas.aura.auth
 
 import com.showerideas.aura.auth.GestureClassifier.Companion.CONFIDENCE_GATE
-import com.showerideas.aura.auth.GestureClassifier.Companion.EMBED_DIM
 import com.showerideas.aura.auth.GestureClassifier.Companion.MIN_ENROLL_SAMPLES
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -109,7 +108,7 @@ class GestureClassifierTest {
     }
 
     @Test
-    fun `confidence is in range 0..1`() {
+    fun `confidence is in range 0 to 1`() {
         calc.train(List(5) { enrolled() })
         val pred = calc.predict(enrolled())
         assertTrue("Confidence must be in [0,1]", pred.confidence in 0f..1f)

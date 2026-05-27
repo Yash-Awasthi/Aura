@@ -21,8 +21,8 @@ class QRExchangeViewModelStateTest {
     fun `SasVerifier produces 6 digit code for identical inputs`() {
         val alice = byteArrayOf(1, 2, 3, 4)
         val bob   = byteArrayOf(1, 2, 3, 4)
-        val sasA  = SasVerifier.computeSasCode(alice, bob)
-        val sasB  = SasVerifier.computeSasCode(alice, bob)
+        val sasA  = SasVerifier.deriveFromBytes(alice, bob)
+        val sasB  = SasVerifier.deriveFromBytes(alice, bob)
         assertEquals("Same inputs must produce same SAS", sasA, sasB)
         assertEquals("SAS must be exactly 6 digits", 6, sasA.length)
         assertTrue("SAS must be numeric", sasA.all { it.isDigit() })
@@ -32,8 +32,8 @@ class QRExchangeViewModelStateTest {
     fun `SasVerifier produces different code for different inputs`() {
         val alice = byteArrayOf(1, 2, 3, 4)
         val bob   = byteArrayOf(9, 8, 7, 6)
-        val sasA = SasVerifier.computeSasCode(alice, alice)
-        val sasB = SasVerifier.computeSasCode(alice, bob)
+        val sasA = SasVerifier.deriveFromBytes(alice, alice)
+        val sasB = SasVerifier.deriveFromBytes(alice, bob)
         // Very unlikely to collide unless SasVerifier is broken
         assertTrue("Different keys should (almost always) produce different SAS codes",
             sasA != sasB || alice.contentEquals(bob))
@@ -43,8 +43,8 @@ class QRExchangeViewModelStateTest {
     fun `SasVerifier is symmetric — order of arguments matters`() {
         val keyA = byteArrayOf(1, 2, 3)
         val keyB = byteArrayOf(4, 5, 6)
-        val sas1 = SasVerifier.computeSasCode(keyA, keyB)
-        val sas2 = SasVerifier.computeSasCode(keyB, keyA)
+        val sas1 = SasVerifier.deriveFromBytes(keyA, keyB)
+        val sas2 = SasVerifier.deriveFromBytes(keyB, keyA)
         // The SAS must be the same regardless of which peer computes it.
         // This is the MITM protection invariant.
         assertEquals("SAS must be symmetric — both peers see the same code", sas1, sas2)
@@ -65,7 +65,7 @@ class QRExchangeViewModelStateTest {
     // Contact dedup
 
     @Test
-    fun `contact dedup: same identity key hash equals same peer`() {
+    fun `contact dedup - same identity key hash equals same peer`() {
         val hash = "sha256_of_ec_public_key_bytes_here"
         // Two contacts representing the same person
         val contact1Id = "uuid-1"
@@ -76,7 +76,7 @@ class QRExchangeViewModelStateTest {
     }
 
     @Test
-    fun `contact dedup: null identity key hash does not collide`() {
+    fun `contact dedup - null identity key hash does not collide`() {
         // Contacts with null identityKeyHash must NOT be deduplicated against each other
         val nullHash1: String? = null
         val nullHash2: String? = null

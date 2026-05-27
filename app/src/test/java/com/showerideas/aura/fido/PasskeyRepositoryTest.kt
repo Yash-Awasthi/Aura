@@ -52,7 +52,7 @@ class PasskeyRepositoryTest {
     }
 
     @Test fun `CtapNfcRelay isCtap2Apdu rejects short APDU`() {
-        assertFalse(CtapNfcRelay.isCtap2Apdu(byteArrayOf(0x00, 0xA4)))
+        assertFalse(CtapNfcRelay.isCtap2Apdu(byteArrayOf(0x00, 0xA4.toByte())))
     }
 
     @Test fun `CtapNfcRelay isCtap2Apdu rejects non-SELECT INS`() {

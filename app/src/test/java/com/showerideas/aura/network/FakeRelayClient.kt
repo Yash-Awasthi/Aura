@@ -1,5 +1,7 @@
 package com.showerideas.aura.network
 
+import org.mockito.kotlin.mock
+
 /**
  * Fake [RelayClient] for JVM unit tests.
  *
@@ -9,7 +11,7 @@ package com.showerideas.aura.network
  *
  * [postSlot] records the call in [postedSlots] and returns [postOk] (default true).
  */
-class FakeRelayClient : RelayClient() {
+class FakeRelayClient : RelayClient(mock()) {
 
     /** Set to false to make every postSlot() return false (network failure). */
     @Volatile var postOk: Boolean = true
