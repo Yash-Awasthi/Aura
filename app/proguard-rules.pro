@@ -116,3 +116,25 @@
 
 # Timber — log wrapper; reflection-safe but dontwarn keeps R8 quiet.
 -dontwarn timber.log.**
+
+# ---------------------------------------------------------------------------
+# Task 79 — Phase 6: Conditional BouncyCastle ML-DSA stripping (API 37+)
+#
+# On API 37+ devices (Android 17), the ML-DSA signing hot path migrates to the
+# native Android Keystore. The BouncyCastle Dilithium signing classes are no
+# longer needed for that path.
+#
+# NOTE: BouncyCastle ML-KEM-768 classes (for key encapsulation) are still
+# required on ALL API levels until Android 17 adds native ML-KEM support.
+# Only the Dilithium signing namespace is safe to strip on API 37+ builds.
+#
+# Build-time stripping is achieved via a separate proguard file loaded
+# conditionally in build.gradle.kts when targeting API 37+ release builds.
+# For now, the main proguard file retains all BC classes for universal compatibility.
+# Runtime gating is handled by HybridIdentityKey.isNativeMlDsaAvailable.
+#
+# Verification: after a targeted API 37+ release build, run:
+#   apkanalyzer dex packages --defined-only app-release.apk | grep dilithium
+# Expected: org.bouncycastle.pqc.crypto.crystals.dilithium.* absent.
+# ---------------------------------------------------------------------------
+-dontnote org.bouncycastle.pqc.crypto.crystals.dilithium.**

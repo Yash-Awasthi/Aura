@@ -215,6 +215,60 @@ object StrongBoxKeyManager {
         kg.generateKey()
     }
 
+    // ── Task 78 — PQC hybrid attestation chain validation ─────────────────────
+
+    /**
+     * Task 78 — Validate an attestation certificate chain, accepting both legacy
+     * ECDSA chains (API ≤ 36) and PQC hybrid ML-DSA chains (API 37+).
+     *
+     * Android 17 (API 37) transitions KeyMint certificate chains to a PQC-hybrid
+     * signature algorithm on intermediate certificates. This validator accepts both
+     * `SHA256withECDSA` and `ML-DSA-65` signature algorithms on intermediates.
+     * The root of trust (Google Hardware Attestation Root CA) is unchanged.
+     *
+     * @param chain  Certificate chain from KeyStore.getCertificateChain().
+     * @return true if the chain structure is valid for the current API level.
+     * @throws java.security.cert.CertificateException if the chain is tampered.
+     */
+    fun validateAttestationChain(chain: List<java.security.cert.X509Certificate>): Boolean {
+        if (chain.isEmpty()) return false
+        return try {
+            for (i in 0 until chain.size - 1) {
+                val cert = chain[i]
+                val issuer = chain[i + 1]
+                val sigAlg = cert.sigAlgName
+                val isSupported = when {
+                    sigAlg.contains("ECDSA", ignoreCase = true) -> true
+                    sigAlg.contains("ML-DSA", ignoreCase = true) && supportsHybridChain() -> true
+                    sigAlg.contains("ML-DSA", ignoreCase = true) && !supportsHybridChain() -> {
+                        Timber.w("StrongBoxKeyManager: ML-DSA chain on API ${Build.VERSION.SDK_INT} — unexpected")
+                        false
+                    }
+                    else -> {
+                        Timber.w("StrongBoxKeyManager: unknown signature algorithm in chain: $sigAlg")
+                        false
+                    }
+                }
+                if (!isSupported) return false
+                // Verify this cert was signed by its issuer (throws CertificateException on failure)
+                cert.verify(issuer.publicKey)
+            }
+            Timber.d("StrongBoxKeyManager: attestation chain validated (${chain.size} certs, hybrid=${supportsHybridChain()})")
+            true
+        } catch (e: java.security.cert.CertificateException) {
+            Timber.e(e, "StrongBoxKeyManager: attestation chain validation FAILED — tampered cert?")
+            throw e
+        } catch (e: Exception) {
+            Timber.e(e, "StrongBoxKeyManager: attestation chain validation error")
+            false
+        }
+    }
+
+    /**
+     * Task 78 — Returns true when PQC hybrid attestation chains are expected (API 37+).
+     */
+    fun supportsHybridChain(): Boolean = Build.VERSION.SDK_INT >= 37
+
     private fun generateAttestationKeyPairTee(alias: String, challenge: ByteArray): List<java.security.cert.Certificate> {
         return try {
             val spec = KeyGenParameterSpec.Builder(

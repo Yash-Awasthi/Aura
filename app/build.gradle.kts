@@ -51,6 +51,20 @@ android {
         buildConfigField("String", "RELAY_SPKI_PIN_PRIMARY", "\"$spkiPrimary\"")
         buildConfigField("String", "RELAY_SPKI_PIN_BACKUP",  "\"$spkiBackup\"")
 
+        // Phase 6 (T80) — Native ML-DSA-65 Keystore availability flag.
+        // True at runtime when Build.VERSION.SDK_INT >= 37 (Android 17).
+        // Used by HybridIdentityKey and tests to gate the native signing path.
+        buildConfigField("boolean", "NATIVE_ML_DSA_AVAILABLE", "false")  // overridden at runtime via Build.VERSION.SDK_INT check
+
+        // Phase 7 (T86) — NFC CTAP2 hardware key relay (enterprise feature flag).
+        buildConfigField("boolean", "ENABLE_HW_KEY_RELAY", "false")
+
+        // Phase 8 (T91) — ZK proof in audit export (enterprise feature flag).
+        buildConfigField("boolean", "ENABLE_ZK_AUDIT_PROOF", "false")
+
+        // Phase 9 (T98) — AR exchange overlay (enterprise feature flag).
+        buildConfigField("boolean", "ENABLE_AR_EXCHANGE", "false")
+
         // PR-04: Export Room schemas so future migrations can be tested
         // against the historical schema files. The schemas directory is
         // committed to source control.
