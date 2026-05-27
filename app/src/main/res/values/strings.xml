@@ -511,4 +511,19 @@
     <!-- Generic actions -->
     <string name="action_close">Close</string>
 
+    <!-- Phase 5 (T71) — Gesture enrollment UI -->
+    <string name="enrollment_title">Set Up Gesture</string>
+    <string name="enrollment_hint_waiting_for_palm">Hold your palm open and flat to begin.</string>
+    <string name="enrollment_hint_anchor_failed">Start with your palm open and flat.</string>
+    <string name="enrollment_hint_capturing">Hold your gesture\u2026</string>
+    <string name="enrollment_hint_processing">Saving your gesture\u2026</string>
+    <string name="enrollment_success_title">Gesture saved.</string>
+    <string name="enrollment_success_body">Your gesture has been enrolled. Use it to authorise exchanges.</string>
+    <string name="enrollment_btn_start">Start</string>
+    <string name="enrollment_btn_done">Done</string>
+    <string name="enrollment_btn_try_now">Try it now</string>
+    <string name="enrollment_couldnt_recognise">Couldn\'t recognise your gesture. Please try again.</string>
+    <string name="enrollment_legacy_prompt_title">Gesture update required</string>
+    <string name="enrollment_legacy_prompt_body">Your gesture enrollment needs to be updated for improved security. This takes 2 seconds.</string>
+
 </resources>

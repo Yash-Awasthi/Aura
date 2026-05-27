@@ -3,6 +3,9 @@ package com.showerideas.aura.auth
 import android.content.Context
 import androidx.camera.view.PreviewView
 import androidx.lifecycle.LifecycleOwner
+import com.showerideas.aura.auth.enrollment.GestureDescriptorStore
+import com.showerideas.aura.auth.enrollment.GestureVerificationEngine
+import com.showerideas.aura.auth.enrollment.VerificationResult
 import com.showerideas.aura.model.GesturePattern
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -40,7 +43,9 @@ import javax.inject.Singleton
 @Singleton
 class GestureAuthManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    val cameraEmbedder: CameraHandEmbedder
+    val cameraEmbedder: CameraHandEmbedder,
+    private val descriptorStore: GestureDescriptorStore,
+    private val verificationEngine: GestureVerificationEngine
 ) {
     companion object {
         private const val PREFS_KEY_PATTERN    = "gesture_feature_vector"
@@ -495,6 +500,29 @@ class GestureAuthManager @Inject constructor(
 
     fun hasSequencePattern(): Boolean =
         hasStoredPattern() && loadSequenceStep2() != null
+
+    // ── Task 73 — Dual-descriptor enrollment delegation ───────────────────────
+
+    /**
+     * Returns true if a valid dual-descriptor (v2 schema) enrollment exists.
+     * Delegates to [GestureDescriptorStore.hasValidEnrollment].
+     * Supersedes [hasStoredPattern] for the Phase 5+ enrollment stack.
+     */
+    fun hasEnrollment(): Boolean = descriptorStore.hasValidEnrollment()
+
+    /**
+     * Returns true if an old single-embedding enrollment exists at the legacy key.
+     * When true, prompt the user to re-enroll before first verification post-upgrade.
+     */
+    fun hasLegacyEnrollment(): Boolean = descriptorStore.hasLegacyEnrollment()
+
+    /**
+     * Verify a live 60-frame capture against stored dual descriptors.
+     * Delegates to [GestureVerificationEngine.verify].
+     * The 3-attempt lockout logic in call sites continues to apply to [VerificationResult.Failure].
+     */
+    fun verify(liveFrames: List<FloatArray>): VerificationResult =
+        verificationEngine.verify(liveFrames)
 
     /**
      * Match a two-step gesture sequence against enrolled step-1 and step-2 patterns.

@@ -115,7 +115,21 @@
     <fragment
         android:id="@+id/gestureLibraryFragment"
         android:name="com.showerideas.aura.ui.profile.GestureLibraryFragment"
-        android:label="Gesture Library" />
+        android:label="Gesture Library">
+        <action
+            android:id="@+id/action_gesture_library_to_enrollment"
+            app:destination="@id/gestureEnrollmentFragment"
+            app:enterAnim="@anim/slide_up"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/slide_down" />
+    </fragment>
+
+    <!-- Phase 5 (T71): Gesture enrollment — 2-second temporal dual-descriptor capture -->
+    <fragment
+        android:id="@+id/gestureEnrollmentFragment"
+        android:name="com.showerideas.aura.ui.enrollment.GestureEnrollmentFragment"
+        android:label="Set Up Gesture" />
 
 
     <!-- Phase 6.10: Encrypted backup screen -->
