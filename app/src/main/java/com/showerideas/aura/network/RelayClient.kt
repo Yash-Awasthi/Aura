@@ -1,6 +1,7 @@
 package com.showerideas.aura.network
 
 import com.showerideas.aura.BuildConfig
+import com.showerideas.aura.relay.privacypass.PrivacyPassClient
 import timber.log.Timber
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -55,8 +56,21 @@ import javax.net.ssl.X509TrustManager
  * The relay *never sees plaintext*: callers encrypt with the ECDH-derived AES-256
  * session key before handing bytes to this class.
  */
+/**
+ * Task 115 — Privacy Pass token redemption wired into [RelayClient].
+ *
+ * When [privacyPassClient] is non-null and has tokens available, each PUT/GET
+ * request attaches a `Privacy-Token` header (RFC 9576 §5) containing a single
+ * redeemed token. The relay validates the token against the issuer's public key
+ * before processing the request.
+ *
+ * If no tokens are available the request proceeds without the header — the relay
+ * may rate-limit or reject (429) depending on its policy.
+ */
 @Singleton
-open class RelayClient @Inject constructor() {
+open class RelayClient @Inject constructor(
+    private val privacyPassClient: PrivacyPassClient? = null
+) {
 
     companion object {
         private const val CONNECT_TIMEOUT_MS = 10_000
@@ -107,6 +121,11 @@ open class RelayClient @Inject constructor() {
             val conn = openConnection("$baseUrl/v1/slots/$endpoint", "PUT")
             conn.setRequestProperty("Content-Type", "application/octet-stream")
             conn.setRequestProperty("Content-Length", encryptedBytes.size.toString())
+            // T115: attach Privacy Pass token if available
+            privacyPassClient?.redeemToken()?.let { tokenHeader ->
+                conn.setRequestProperty(PrivacyPassClient.HEADER_NAME, tokenHeader)
+                Timber.d("RelayClient: Privacy-Token attached to PUT")
+            }
             conn.doOutput = true
             conn.outputStream.use { it.write(encryptedBytes) }
             val code = conn.responseCode
@@ -125,6 +144,11 @@ open class RelayClient @Inject constructor() {
     open fun getSlot(baseUrl: String, endpoint: String): ByteArray? {
         return try {
             val conn = openConnection("$baseUrl/v1/slots/$endpoint", "GET")
+            // T115: attach Privacy Pass token if available
+            privacyPassClient?.redeemToken()?.let { tokenHeader ->
+                conn.setRequestProperty(PrivacyPassClient.HEADER_NAME, tokenHeader)
+                Timber.d("RelayClient: Privacy-Token attached to GET")
+            }
             val code = conn.responseCode
             if (code == 200) {
                 conn.inputStream.use { it.readBytes() }
