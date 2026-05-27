@@ -61,7 +61,7 @@ jobs:
             mediapipe-gesture-model-
 
       - name: Unit tests GMS (testGmsDebugUnitTest)
-        run: ./gradlew testGmsDebugUnitTest --stacktrace
+        run: ./gradlew testGmsDebugUnitTest --stacktrace --info
       - name: Unit tests FOSS (testFossDebugUnitTest)
         run: ./gradlew testFossDebugUnitTest --stacktrace
         env:
