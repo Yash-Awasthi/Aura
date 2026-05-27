@@ -181,6 +181,24 @@
             </intent-filter>
         </service>
 
+        <!-- Task 83 — FIDO2 CredentialProvider service (Android 14+ / API 34+) -->
+        <service
+            android:name=".fido.AuraCredentialProviderService"
+            android:exported="true"
+            android:permission="android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.credentials.CredentialProviderService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.credentials.provider"
+                android:resource="@xml/credential_provider_config" />
+        </service>
+
+        <!-- Task 83 — Gesture gate activity for FIDO2 passkey operations -->
+        <activity
+            android:name=".ui.fido.PasskeyGestureGateActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

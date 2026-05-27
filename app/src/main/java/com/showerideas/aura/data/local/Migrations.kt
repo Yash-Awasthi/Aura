@@ -239,6 +239,29 @@ object Migrations {
         }
     }
 
+    /**
+     * v11 → v12: Add passkeys table (Tasks 83/84) and gesture_zk_proof column
+     * on exchange_audit_log (Task 91 — ZK-SNARK audit export).
+     */
+    val MIGRATION_11_12: Migration = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Task 83/84: FIDO2 passkey metadata table
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS passkeys (
+                    credentialId TEXT NOT NULL PRIMARY KEY,
+                    rp_id TEXT NOT NULL,
+                    user_handle BLOB NOT NULL,
+                    created_at INTEGER NOT NULL DEFAULT 0,
+                    rp_name TEXT NOT NULL DEFAULT ''
+                )
+            """.trimIndent())
+            // Task 91: ZK proof column on exchange audit log
+            db.execSQL(
+                "ALTER TABLE exchange_audit_log ADD COLUMN gesture_zk_proof BLOB DEFAULT NULL"
+            )
+        }
+    }
+
     /** Ordered list of every migration — passed to Room.databaseBuilder. */
     val ALL: Array<Migration> = arrayOf(
         MIGRATION_1_2,
@@ -250,7 +273,8 @@ object Migrations {
         MIGRATION_7_8,
         MIGRATION_8_9,
         MIGRATION_9_10,
-        MIGRATION_10_11
+        MIGRATION_10_11,
+        MIGRATION_11_12
     )
 }
 
