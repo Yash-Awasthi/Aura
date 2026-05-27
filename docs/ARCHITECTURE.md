@@ -1,10 +1,10 @@
 # Architecture
 
-> AURA is a single-module Android app with a strict **UI → ViewModel → Repository → DAO** dependency flow, plus two long-lived foreground services for the hardware-coupled parts (volume-button listener and the Nearby Connections exchange).
+> AURA is a single-module Android app with a strict **UI → ViewModel → Repository → DAO** dependency flow. One long-lived foreground service (`NearbyExchangeService`) manages the Bluetooth/Wi-Fi P2P exchange session; a second foreground service (`AuraHceService`) handles NFC Host Card Emulation. Activation is in-app — the user opens AURA and taps Exchange.
 
 ---
 
-## 1. Module / package map
+## 1. Package map
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{
@@ -18,95 +18,130 @@
   'tertiaryColor':'#FAFAF9',
   'clusterBkg':'#F8FAFC',
   'clusterBorder':'#CBD5E1'
-},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12},'sequence':{'actorMargin':50,'boxMargin':10,'noteMargin':10,'messageMargin':35}}}%%
+},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12}}}%%
 flowchart TB
-    subgraph UI["🎨&nbsp;ui"]
+    subgraph UI["🎨 ui"]
         direction LR
         home["home"]:::ui
         profile["profile"]:::ui
-        exchange["exchange"]:::ui
-        contacts["contacts"]:::ui
+        exchange["exchange\n· ExchangeFragment\n· ExchangeSuccessBottomSheet\n· SharePresetBottomSheet"]:::ui
+        contacts["contacts\n· ContactsFragment (tabs)\n· ExchangeHistoryFragment\n· ContactDetailBottomSheet"]:::ui
         onboarding["onboarding"]:::ui
         qr["qr"]:::ui
         room["room"]:::ui
-        settings["settings"]:::ui
-        MA["Main<br/>Activity"]:::ui
-        PRr["Permission<br/>Rationale"]:::ui
+        settings["settings\n+ backup"]:::ui
+        audit["audit\n+ analytics"]:::ui
     end
-    subgraph AUTH["🔐&nbsp;auth"]
+    subgraph AUTH["🎯 auth"]
         direction LR
-        GAM["Gesture<br/>AuthMgr"]:::service
-        BAH["Biometric<br/>Helper"]:::service
+        GAM["GestureAuthManager"]:::service
+        CHE["CameraHandEmbedder"]:::service
+        TGC["TemporalGestureClassifier"]:::service
+        LG["LivenessGuard"]:::service
+        BAH["BiometricAuthHelper"]:::service
+        CAM["ContinuousAuthMonitor"]:::service
+        BFE["BehavioralFeatureExtractor"]:::service
     end
-    subgraph SVC["⚙️&nbsp;service"]
+    subgraph SVC["⚙️ service"]
         direction LR
-        VBLS["Volume<br/>Service"]:::service
-        NES["Nearby<br/>Service"]:::service
+        NES["NearbyExchangeService"]:::service
+        HCE["AuraHceService\n(NFC)"]:::service
+        QST["AuraQsTileService"]:::service
+        PEQ["PendingExchangeQueue"]:::service
+        RES["RoomExchangeService"]:::service
     end
-    subgraph DATA["💾&nbsp;data"]
+    subgraph CRY["🔐 crypto"]
         direction LR
-        CR["Contact<br/>Repo"]:::data
-        PRP["Profile<br/>Repo"]:::data
-        BR["Blocklist<br/>Repo"]:::data
-        AP["Auth<br/>Prefs"]:::data
-        OP["Onboard<br/>Prefs"]:::data
-        subgraph LOC["local"]
+        KEM["HybridKEM\nHybridKemEngine"]:::crypto
+        SIG["HybridIdentityKey\nHybridSignature"]:::crypto
+        NC["NoiseChannel\nNoiseHandshakeState"]:::crypto
+        DR["DoubleRatchetState\nSpqrState"]:::crypto
+        PQXDH["PQXDHSender\nPQXDHReceiver\nPreKeyBundle"]:::crypto
+        MLS["MlsGroupState\nMlsWelcome"]:::crypto
+        SE["SealedEnvelope"]:::crypto
+        PSI["PsiContactDiscovery"]:::crypto
+    end
+    subgraph IDL["🪪 identity"]
+        direction LR
+        VC["VcIssuer"]:::id
+        MD["MdocDocument"]:::id
+        VP["VpBuilder"]:::id
+        VCR["VerifiableCredential"]:::id
+    end
+    subgraph NET["🌐 network"]
+        direction LR
+        RC["RelayClient"]:::data
+        OC["ObliviousHttpClient"]:::data
+        QRC["QuicRelayClient"]:::data
+        TOR["TorRelayManager"]:::data
+    end
+    subgraph SEC["🛡 security"]
+        direction LR
+        SBK["StrongBoxKeyManager"]:::crypto
+        API["AdvancedProtectionIntegration"]:::crypto
+        BLF["BloomFilter"]:::crypto
+        BRW["BlocklistRefreshWorker"]:::crypto
+    end
+    subgraph ENT["🏢 enterprise"]
+        direction LR
+        EP["EnterprisePolicy"]:::id
+        ZTE["ZeroTouchEnrollmentManager"]:::id
+        AEW["AuditExportWorker"]:::id
+    end
+    subgraph DATA["💾 data — Room v11"]
+        direction LR
+        CR["ContactRepository"]:::data
+        PR["ProfileRepository"]:::data
+        BR["BlocklistRepository"]:::data
+        AR["ExchangeAuditRepository"]:::data
+        KPR["KnownPeerRepository"]:::data
+        RR["RoomRepository"]:::data
+        subgraph LOC["local DAOs"]
             direction LR
-            AD["AppDb<br/>v5"]:::data
-            CD["Contact<br/>Dao"]:::data
-            PD["Profile<br/>Dao"]:::data
-            BD["Blocked<br/>Dao"]:::data
-            MIG["Migrations"]:::data
+            CD["ContactDao"]:::data
+            PD["ProfileDao"]:::data
+            BD["BlockedEndpointDao"]:::data
+            KPD["KnownPeerDao"]:::data
+            AuD["ExchangeAuditDao"]:::data
+            SPD["SharePresetDao"]:::data
+            RSD["RoomSessionDao"]:::data
         end
     end
-    subgraph MOD["📦&nbsp;model"]
+    subgraph UTILS["🔧 utils"]
         direction LR
-        Mp["Profile"]:::muted
-        Mc["Contact"]:::muted
-        Mb["Blocked<br/>Endpoint"]:::muted
-        Me["Exchange<br/>Session"]:::muted
-        Mg["Gesture<br/>Pattern"]:::muted
-    end
-    subgraph UTILS["🔧&nbsp;utils"]
-        direction LR
-        CU["Crypto<br/>Utils"]:::crypto
-        PV["Payload<br/>Validator"]:::crypto
-        VU["VCard<br/>Utils"]:::crypto
-        EU["Export<br/>Utils"]:::crypto
-        AU["Avatar<br/>Utils"]:::crypto
-        EX["Extensions"]:::crypto
-    end
-    subgraph DI["💉&nbsp;di"]
-        DM["Database<br/>Module"]:::ok
+        CU["CryptoUtils"]:::crypto
+        PV["PayloadValidator"]:::crypto
+        SV["SasVerifier"]:::crypto
+        VU["VCardUtils"]:::crypto
+        IKR["IdentityKeyRotator\nIdentityRotationDetector"]:::crypto
+        AU["AvatarUtils\nIdenticonGenerator"]:::crypto
+        EU["ExportUtils\nBackupUtils"]:::crypto
+        DU["DeeplinkUtils"]:::crypto
     end
 
-    UI --> AUTH
-    UI --> DATA
-    UI --> SVC
-    SVC --> AUTH
-    SVC --> DATA
-    SVC --> UTILS
-    DATA --> MOD
+    UI --> AUTH & SVC & DATA
+    SVC --> CRY & IDL & NET & DATA
+    AUTH --> DATA
+    SEC --> DATA
+    ENT --> DATA
     DATA --> LOC
-    LOC --> MOD
+    CRY --> UTILS
     AUTH --> UTILS
-    DI --> DATA
 
     classDef ui fill:#8B5CF6,color:#FFFFFF,stroke:#5B21B6,stroke-width:2px
     classDef service fill:#0EA5E9,color:#FFFFFF,stroke:#075985,stroke-width:2px
-    classDef data fill:#10B981,color:#FFFFFF,stroke:#065F46,stroke-width:2px
     classDef crypto fill:#EC4899,color:#FFFFFF,stroke:#9D174D,stroke-width:2px
-    classDef muted fill:#64748B,color:#FFFFFF,stroke:#1E293B,stroke-width:2px
-    classDef ok fill:#22C55E,color:#FFFFFF,stroke:#166534,stroke-width:2px
+    classDef id fill:#F59E0B,color:#1F2937,stroke:#92400E,stroke-width:2px
+    classDef data fill:#10B981,color:#FFFFFF,stroke:#065F46,stroke-width:2px
 ```
 
 ### Dependency-direction rules
 
-1. **`ui` may depend on anything below it**, but never on another `ui/*` sub-package directly (use `Navigation`).
-2. **`service` does not depend on `ui`** — it talks to `data` and emits events via Intents / `StateFlow`s exposed through repositories.
-3. **`data/local` knows nothing about Android UI** and never imports `androidx.fragment` etc.
-4. **`utils` is pure-Kotlin / JVM-testable** wherever possible. `CryptoUtils`, `VCardUtils`, `PayloadValidator` are exercised by `app/src/test` unit tests.
-5. **`model` has zero outbound deps** — these are plain data classes / Room `@Entity`.
+1. **`ui` may depend on anything below it** but never on another `ui/*` sub-package directly — use NavController actions.
+2. **`service` does not depend on `ui`** — it emits state via `NearbyExchangeService.sessionState: StateFlow<ExchangeSession?>` which fragments collect.
+3. **`data/local` knows nothing about Android UI** — no `androidx.fragment` imports.
+4. **`utils` is pure-Kotlin / JVM-testable** wherever possible. `CryptoUtils`, `PayloadValidator`, `SasVerifier`, `VCardUtils` are covered by `app/src/test` unit tests.
+5. **`model` has zero outbound deps** — plain data classes and Room `@Entity`.
 
 ---
 
@@ -124,67 +159,61 @@ flowchart TB
   'tertiaryColor':'#FAFAF9',
   'clusterBkg':'#F8FAFC',
   'clusterBorder':'#CBD5E1'
-},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12},'sequence':{'actorMargin':50,'boxMargin':10,'noteMargin':10,'messageMargin':35}}}%%
+},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-    subgraph FG["⚙️&nbsp;Foreground&nbsp;services"]
+    subgraph FG["⚙️ Foreground services"]
         direction TB
-        VBLS["Volume<br/>Service"]:::service
-        NES["Nearby<br/>Service"]:::service
+        NES["NearbyExchangeService\n(BLE/WiFi-P2P exchange)"]:::service
+        HCE["AuraHceService\n(NFC HCE)"]:::service
     end
-    subgraph UIp["🎨&nbsp;UI&nbsp;process"]
+    subgraph UIp["🎨 UI process"]
         direction TB
-        MA["Main<br/>Activity"]:::ui
-        EF["Exchange<br/>Fragment"]:::ui
-        HF["Home<br/>Fragment"]:::ui
+        MA["MainActivity"]:::ui
+        EF["ExchangeFragment\n+SuccessBottomSheet"]:::ui
+        CF["ContactsFragment\n+HistoryTab"]:::ui
+        HF["HomeFragment"]:::ui
     end
-    subgraph OS["📱&nbsp;Android&nbsp;OS"]
+    subgraph OS["📱 Android OS"]
         direction TB
-        ME["Media<br/>Session"]:::muted
-        NC["Nearby<br/>Conn API"]:::muted
-        KS["Android<br/>Keystore"]:::muted
-        SM["Sensor<br/>Manager"]:::muted
-        BIO["Biometric<br/>Prompt"]:::muted
+        NC["Nearby Connections API"]:::muted
+        KS["Android Keystore"]:::muted
+        CAM["Camera (CameraX)"]:::muted
+        BIO["Biometric Prompt"]:::muted
+        NFC["NFC Manager"]:::muted
     end
-    subgraph STO["💾&nbsp;On-device&nbsp;storage"]
+    subgraph STO["💾 On-device storage"]
         direction TB
-        ROOM[("Room<br/>v2")]:::data
-        ESP[("Encrypted<br/>Prefs")]:::data
-        DSP[("Data<br/>Store")]:::data
+        ROOM[("Room v11\n(11 schemas)")]:::data
+        ESP[("EncryptedSharedPreferences\n(gesture template)")]:::data
+        DSP[("DataStore\n(preferences)")]:::data
     end
 
-    ME -->|"key events"| VBLS
-    VBLS -->|"ACTION_ACTIVATE"| MA
-    MA --> EF
-    HF --> NES
-    EF -->|"verified gesture"| NES
-    EF -->|"perform"| SM
+    MA --> EF & CF & HF
+    EF -->|"gesture auth"| CAM
     EF -->|"or biometric"| BIO
+    EF -->|"verified → start"| NES
+    HF -->|"tap Exchange"| EF
     NES <-->|"BLE / WiFi-P2P"| NC
-    NES --> KS
-    NES --> ROOM
+    NES --> KS & ROOM
+    HCE <--> NFC
+    HCE --> ROOM
     EF --> ESP
     MA --> DSP
-
-    classDef service fill:#0EA5E9,color:#FFFFFF,stroke:#075985,stroke-width:2px
-    classDef ui fill:#8B5CF6,color:#FFFFFF,stroke:#5B21B6,stroke-width:2px
-    classDef muted fill:#64748B,color:#FFFFFF,stroke:#1E293B,stroke-width:2px
-    classDef data fill:#10B981,color:#FFFFFF,stroke:#065F46,stroke-width:2px
+    CF -->|"history + contacts"| ROOM
 ```
 
-### Why two services?
+### Services
 
-| Service | Why it must be foreground |
-|---|---|
-| `VolumeButtonListenerService` | Needs to receive `MediaSession` button events even when AURA is in the background. Without a foreground notification, Android 12+ will reap it within seconds. |
-| `NearbyExchangeService` | Holds a BLE / Wi-Fi P2P connection during the exchange; Android requires a `foregroundServiceType="connectedDevice"` to keep BLE active. |
-
-Both services are declared in [`AndroidManifest.xml`](../app/src/main/AndroidManifest.xml) with the right `foregroundServiceType` and request `FOREGROUND_SERVICE_CONNECTED_DEVICE` on API 34+.
+| Service | `foregroundServiceType` | Why foreground |
+|---|---|---|
+| `NearbyExchangeService` | `connectedDevice` | Holds a BLE / Wi-Fi P2P connection; Android 12+ requires `FOREGROUND_SERVICE_CONNECTED_DEVICE` to keep it alive |
+| `AuraHceService` | n/a (bound by NFC Manager) | System-bound via the APDU service descriptor in the manifest; no persistent foreground notification needed |
 
 ---
 
-## 3. Class-level overview of the exchange service
+## 3. Exchange service state machine
 
-`NearbyExchangeService` is the single largest class (~1 kLOC) and the security-critical hot path. Internally it is a small state machine plus a typed message protocol over the Nearby Connections `Payload` API.
+`NearbyExchangeService` is the security-critical hot path. Internally it is a typed state machine over `ExchangeSession.State`:
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{
@@ -193,47 +222,42 @@ Both services are declared in [`AndroidManifest.xml`](../app/src/main/AndroidMan
   'primaryColor':'#0EA5E9',
   'primaryTextColor':'#0F172A',
   'primaryBorderColor':'#075985',
-  'lineColor':'#475569',
-  'secondaryColor':'#F1F5F9',
-  'tertiaryColor':'#FAFAF9',
-  'clusterBkg':'#F8FAFC',
-  'clusterBorder':'#CBD5E1'
-},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12},'sequence':{'actorMargin':50,'boxMargin':10,'noteMargin':10,'messageMargin':35}}}%%
+  'lineColor':'#475569'
+}}}%%
 stateDiagram-v2
     [*] --> Idle
     Idle --> Advertising: start()
-    Idle --> AdvertisingHost: startRoomHost()
-    Idle --> DiscoveringGuest: startRoomGuest()
+    Idle --> RoomHost: startRoomHost()
+    Idle --> RoomGuest: startRoomGuest()
     Advertising --> Connecting: onEndpointFound
-    AdvertisingHost --> Connecting: onEndpointFound
-    DiscoveringGuest --> Connecting: onEndpointFound
+    RoomHost --> Connecting: onEndpointFound
+    RoomGuest --> Connecting: onEndpointFound
     Connecting --> KeyExchange: onConnectionResult(OK)
-    KeyExchange --> Challenge: peer pub key received
-    Challenge --> ChallengeVerify: response received
-    ChallengeVerify --> ProfileExchange: signature valid
-    ChallengeVerify --> Aborted: signature invalid<br/>(impersonation)
+    Connecting --> Idle: onConnectionResult(FAIL)
+    KeyExchange --> Verifying: SAS PIN derived → UI shown
+    Verifying --> ProfileExchange: ACTION_CONFIRM_SAS
+    Verifying --> Aborted: ACTION_ABORT_SAS / timeout
     ProfileExchange --> AvatarStream: profile saved
     ProfileExchange --> Completed: no avatar
-    AvatarStream --> Completed: stream ingested
-    Completed --> [*]
-    Aborted --> [*]
-    Connecting --> Aborted: timeout / disconnect
-    KeyExchange --> Aborted: malformed
-    AdvertisingHost --> AdvertisingHost: next guest
+    AvatarStream --> Completed: STREAM finished
+    Completed --> Idle
+    KeyExchange --> Aborted: bad identity signature
+    ProfileExchange --> Aborted: replay window violation
+    Aborted --> Idle
 ```
 
-The wire format is one byte of `MSG_TYPE` followed by a body whose shape depends on the type:
+### Wire message types
 
-| `MSG_TYPE` | Hex | Body |
-|---|---|---|
-| `PUBLIC_KEY` (Hello) | `0x01` | JSON `HelloPayload` — X25519 pub (32 B) + ML-KEM-768 pub (1184 B) |
-| `PUBLIC_KEY` (HelloAck) | `0x01` | JSON `HelloAckPayload` — X25519 eph pub (32 B) + ML-KEM-768 ciphertext (1088 B) |
-| `PROFILE` | `0x02` | `AES-GCM(profile JSON)` (IV ‖ ciphertext ‖ tag) |
-| `AVATAR` | `0x03` | Base64(SPKI pub key) `\|` STREAM-payload-id |
-| `CHALLENGE` | `0x04` | Base64(SPKI long-lived pub key) `\|` 32-byte nonce |
-| `CHALLENGE_RESPONSE` | `0x05` | Base64(SPKI long-lived pub key) `\|` ML-DSA-65+ECDSA hybrid signature |
+| `MSG_TYPE` | Body |
+|---|---|
+| `PUBLIC_KEY` / Hello | `HelloPayload` — X25519 pub (32 B) + ML-KEM-768 pub (1184 B) |
+| `PUBLIC_KEY` / HelloAck | `HelloAckPayload` — X25519 eph pub (32 B) + ML-KEM-768 ciphertext (1088 B) |
+| `PROFILE` | `AES-GCM(profileJSON + _ts + _nonce)` |
+| `AVATAR` | SPKI pub key + Nearby STREAM payload-id |
+| `CHALLENGE` | SPKI long-lived pub key + 32-byte nonce |
+| `CHALLENGE_RESPONSE` | SPKI long-lived pub key + ML-DSA-65+ECDSA hybrid signature |
 
-The full v9 frame specification (version byte, frame types, sealed sender, key sizes) is in [`WIRE_PROTOCOL.md`](WIRE_PROTOCOL.md). See [`EXCHANGE_FLOW.md`](EXCHANGE_FLOW.md) for the full ordered walkthrough.
+Full v9 frame specification in [`WIRE_PROTOCOL.md`](WIRE_PROTOCOL.md).
 
 ---
 
@@ -245,49 +269,78 @@ The full v9 frame specification (version byte, frame types, sealed sender, key s
   'fontSize':'14px',
   'primaryColor':'#0EA5E9',
   'primaryTextColor':'#0F172A',
-  'primaryBorderColor':'#075985',
+  'primaryBorderColor':'#075585',
   'lineColor':'#475569',
-  'secondaryColor':'#F1F5F9',
-  'tertiaryColor':'#FAFAF9',
   'clusterBkg':'#F8FAFC',
   'clusterBorder':'#CBD5E1'
-},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12},'sequence':{'actorMargin':50,'boxMargin':10,'noteMargin':10,'messageMargin':35}}}%%
+},'flowchart':{'curve':'basis','nodeSpacing':40,'rankSpacing':50,'padding':12}}}%%
 flowchart LR
-    Splash(["app<br/>start"]):::user --> Onb{"First<br/>launch?"}:::gate
-    Onb -- "yes" --> Onboard["Onboard<br/>Fragment"]:::ui
-    Onb -- "no" --> Home["Home<br/>Fragment"]:::ui
+    Splash(["app start"]):::user --> Onb{"First launch?"}:::gate
+    Onb -- yes --> Onboard["Onboarding"]:::ui
+    Onb -- no --> Home["Home"]:::ui
     Onboard --> Home
-    Home -->|"Activate"| Exchange["Exchange<br/>Fragment"]:::ui
-    Home -->|"Edit"| Profile["Profile<br/>Fragment"]:::ui
-    Home -->|"Contacts"| Contacts["Contacts<br/>Fragment"]:::ui
-    Home -->|"QR"| QR["QR<br/>Fragment"]:::ui
-    Home -->|"Room"| Room["Room<br/>Fragment"]:::ui
-    Home -->|"Settings"| Settings["Settings<br/>Fragment"]:::ui
-    Settings --> Blocked["Blocked<br/>Fragment"]:::ui
-    Contacts -->|"tap"| Detail["Contact<br/>Detail"]:::ui
+
+    Home -->|"tap Exchange"| Exchange["Exchange\n+ SuccessSheet"]:::ui
+    Home -->|"Edit profile"| Profile["Profile"]:::ui
+    Profile --> GestLib["Gesture Library"]:::ui
+    Home -->|"Contacts"| Contacts["Contacts\n(My Contacts tab)"]:::ui
+    Contacts -->|"History tab"| History["Exchange\nHistory"]:::ui
+    Contacts -->|"tap row"| Detail["Contact Detail\n(BottomSheet)"]:::ui
+    Contacts -->|"overflow → Audit"| Audit["Audit Log"]:::ui
+    Audit --> Analytics["Analytics"]:::ui
+    Home -->|"QR"| QR["QR Exchange"]:::ui
+    Home -->|"Room"| Room["Room Exchange"]:::ui
+    Home -->|"Settings"| Settings["Settings"]:::ui
+    Settings --> Blocked["Blocked Devices"]:::ui
+    Settings --> Audit
+    Settings --> Backup["Backup & Restore"]:::ui
+    Exchange -->|"Done"| Contacts
 
     classDef user fill:#6E56CF,color:#FFFFFF,stroke:#3D2C7A,stroke-width:2px
     classDef ui fill:#8B5CF6,color:#FFFFFF,stroke:#5B21B6,stroke-width:2px
     classDef gate fill:#F59E0B,color:#1F2937,stroke:#92400E,stroke-width:2px
 ```
 
-The `nav_graph.xml` lives at [`app/src/main/res/navigation/nav_graph.xml`](../app/src/main/res/navigation/nav_graph.xml).
+The Navigation Component source of truth is [`app/src/main/res/navigation/nav_graph.xml`](../app/src/main/res/navigation/nav_graph.xml).
 
 ---
 
-## 5. Dependency injection (Hilt)
+## 5. Post-exchange UX flows
+
+### Exchange success sheet
+
+When `ExchangeSession.State.COMPLETED` is emitted, `ExchangeFragment` shows `ExchangeSuccessBottomSheet` (guarded by a `successSheetShown` flag so it fires once per session). The sheet:
+
+- Displays the received contact — avatar initial, name, phone/email
+- Tap a row → `ContactDetailBottomSheet` (full profile, call/email/copy/export actions)
+- ✕ button → dismiss + `popBackStack(homeFragment)` to return home
+
+### Contacts history tab
+
+`ContactsFragment` hosts a `TabLayout` with two tabs:
+
+| Tab | Content |
+|---|---|
+| **My Contacts** | Existing contacts list — search, favourites chip, RecyclerView |
+| **History** | `ExchangeHistoryFragment` (lazy-loaded on first selection) |
+
+`ExchangeHistoryViewModel` joins `ExchangeAuditRepository.allEntries` (filtered to `outcome == SUCCESS`) with `ContactRepository.allContacts` via `identityKeyHash` → `List<ExchangeHistoryItem(entry, contact?)>`. Each row shows the channel badge, timestamp, and two action buttons: **View** (opens `ContactDetailBottomSheet`) and **Add to Phone** (fires `ContactsContract.Intents.Insert` to save to the device address book).
+
+---
+
+## 6. Dependency injection (Hilt)
 
 A single `DatabaseModule` (`@InstallIn(SingletonComponent::class)`) provides:
 
-- `AppDatabase` (Room v5) — built with all four migrations registered (`MIGRATION_1_2` through `MIGRATION_4_5`).
-- Each DAO (`ContactDao`, `ProfileDao`, `BlockedEndpointDao`, `KnownPeerDao`, `ExchangeAuditDao`) is provided from the singleton database.
-- `GestureAuthManager`, `BiometricAuthHelper`, and the five repositories (`ContactRepository`, `ProfileRepository`, `BlocklistRepository`, `KnownPeerRepository`, `ExchangeAuditRepository`) are constructor-`@Inject`ed.
+- `AppDatabase` (Room v11) — built with all migrations registered (`MIGRATION_1_2` through `MIGRATION_10_11`).
+- Every DAO: `ContactDao`, `ProfileDao`, `BlockedEndpointDao`, `KnownPeerDao`, `ExchangeAuditDao`, `SharePresetDao`, `RoomSessionDao`.
+- All repositories (`ContactRepository`, `ProfileRepository`, `BlocklistRepository`, `KnownPeerRepository`, `ExchangeAuditRepository`, `RoomRepository`) are constructor-`@Inject`ed singletons.
 
-ViewModels use `@HiltViewModel`. The `AuraApplication` class is annotated `@HiltAndroidApp`.
+ViewModels use `@HiltViewModel`. `AuraApplication` is annotated `@HiltAndroidApp`.
 
 ---
 
-## 6. Build configuration in one glance
+## 7. Build configuration
 
 | Property | Value | Where |
 |---|---|---|
@@ -297,12 +350,9 @@ ViewModels use `@HiltViewModel`. The `AuraApplication` class is annotated `@Hilt
 | Min SDK | 26 | `app/build.gradle.kts` |
 | JVM target | 17 | `app/build.gradle.kts` |
 | `applicationId` | `com.showerideas.aura` (`.debug` suffix on debug) | `app/build.gradle.kts` |
-| `versionCode` / `versionName` | `2` / `1.1.0` (build.gradle — see note) | `app/build.gradle.kts` |
+| `versionCode` / `versionName` | `4` / `4.0.0` | `app/build.gradle.kts` |
 | `isMinifyEnabled` (release) | `true` | `app/build.gradle.kts` |
-| ProGuard rules | `app/proguard-rules.pro` | linked in `release` block |
-| Schema export dir | `app/schemas/` | annotation processor arg |
+| Room schema version | **11** | `AppDatabase` annotation |
 | Signing config | env-var driven (`KEYSTORE_BASE64` etc. in GitHub Secrets) | `app/build.gradle.kts` |
 
-> **Note:** The declared `versionName` in `app/build.gradle.kts` is the APK-visible version. The logical engineering milestone (`v4.0.0` in `ROADMAP.md`) tracks feature delivery independently — bump `versionCode`/`versionName` when cutting a public release.
-
-For the actual build invocation see [`BUILD.md`](BUILD.md).
+For the full build invocation see [`BUILD.md`](BUILD.md).

@@ -1,6 +1,6 @@
 # Data model
 
-> Everything that survives a process restart lives in **one Room database** (`AppDatabase`, currently at schema version `5`), plus a small amount of preference data in `DataStore` and `EncryptedSharedPreferences`.
+> Everything that survives a process restart lives in **one Room database** (`AppDatabase`, currently at schema version `11`), plus a small amount of preference data in `DataStore` and `EncryptedSharedPreferences`.
 
 ---
 

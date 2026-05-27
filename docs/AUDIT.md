@@ -15,7 +15,7 @@
 | # | Claim | Status | Evidence |
 |---|---|---|---|
 | H1 | "Offline-first — no server, no cloud sync, no account required" | 🟡 | Core BLE/Wi-Fi-P2P exchange paths are fully offline. `INTERNET` permission is declared for the optional QR relay path (`RelayClient.kt`); all relay traffic is AES-256-GCM ciphertext over HTTPS. No account, no analytics, no cloud sync. `network_security_config.xml` forbids cleartext. |
-| H2 | "Triple-press volume ↓ activates AURA" | 🟢 | `VolumeButtonListenerService` listens to media-button events and emits `ACTION_ACTIVATE` after three vol-down presses. |
+| H2 | "Open app → tap Exchange to activate" | 🟢 | In-app activation via the Exchange button in `HomeFragment`. Volume-button trigger was removed (unreliable on OEM skins). QS tile remains available as a quick-launch shortcut. |
 | H3 | "Perform your recorded gesture" | 🟢 | `GestureAuthManager` + CameraX + MediaPipe GestureRecognizer (21 landmarks, cosine similarity ≥ 0.88). The gesture is an ergonomic gate (30–70% FAR for same-gesture cross-person pairs, documented); the real security anchor is the ECDSA identity key. See [docs/GESTURE_AUTH.md](GESTURE_AUTH.md). |
 | H4 | "Nearby Connections P2P link forms" | 🟢 | `play-services-nearby:19.1.0` wired through `NearbyExchangeService`. |
 | H5 | "ECDH key exchange (ephemeral per session)" | 🟢 | `CryptoUtils.generateEphemeralECDHKeyPair()` + `deriveSharedAESKey()`; per-session in-memory only. |
@@ -134,7 +134,7 @@ Post-v1.0 static analysis and fix pass. Evidence-based, no unverified claims.
 | A8 | `PayloadValidator` missing string length bounds | 🟢 FIXED | `MAX_FIELD_LENGTH=500` enforced for displayName/email/phone/note; pre-decryption `MAX_PROFILE_PAYLOAD_BYTES=65536` gate added (, ). | — |
 | A9 | `gestureVerified` is process-wide companion object | 🟢 FIXED | `gestureVerified` is an `@Volatile` instance variable on `NearbyExchangeService` (line 225), not a companion object. Per-instance gate — correctly scoped. | — |
 | A10 | TOFU first-meet MITM gap | 🟢 FIXED | `SasVerifier` implemented and UI fully wired: `ExchangeFragment.showSasDialog()` fires on `State.VERIFYING`; `ExchangeSession.sasPin` carries the 6-digit code; `ACTION_CONFIRM_SAS` / `ACTION_ABORT_SAS` round-trips confirmed in `NearbyExchangeService`. | — |
-| A11 | Volume-button wake works on all devices | 🟡 PARTIAL | OEM failure rate >50% on Samsung/MIUI/ColorOS documented. In-app reliability test added to Settings (). See [docs/VOLUME_BUTTON_RELIABILITY.md](VOLUME_BUTTON_RELIABILITY.md). | Not fixable without AccessibilityService. |
+| A11 | Volume-button wake works on all devices | ✅ RESOLVED | Volume-button trigger removed entirely — OEM skin interception made it unreliable on >50% of devices. Activation is now in-app (tap Exchange) + QS tile. See [docs/VOLUME_BUTTON_RELIABILITY.md](VOLUME_BUTTON_RELIABILITY.md) for history. |
 | A12 | APK committed to source | 🔴 **FIXED** | `app/release/*.apk` removed from git history; `app/release/` added to `.gitignore` (). | — |
 | A13 | Wire-protocol scenarios tested | 🟢 FIXED | `WireProtocolTest.kt` (17 JVM tests), `FakeNearbyTransport.kt`, `SasVerifierTest.kt` (17 tests), `NearbyTransport` interface added (, ). | Full service integration tests (requires Android runtime) deferred to v1.2 emulator CI. |
 | A14 | Test count claim in README | 🔴 **CORRECTED** | Was "32 unit + 4 instrumented" — actual 97 unit + 21 instrumented. Fixed (). | — |

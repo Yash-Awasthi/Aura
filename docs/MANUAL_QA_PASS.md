@@ -64,17 +64,15 @@ adb -s <samsung-serial> install -r app/build/outputs/apk/release/*.apk
 
 ---
 
-### S3 — Volume-button wake (reliability test)
+### S3 — Exchange activation (in-app)
+
+> Volume-button triple-press was removed. Activation is now in-app only.
 
 | Step | Expected | Pass/Fail |
 |---|---|---|
-| Settings → "Background activation" toggle ON | Amber warning banner appears | |
-| Tap "Test volume button" row | "Listening…" state; green row visible | |
-| Triple-press vol ▼ within 3 seconds | **Pixel:** Success toast. **Samsung:** May show Fail toast (documented OEM limitation) | |
-| Settings → toggle OFF | Banner disappears | |
-
-> ⚠️ Samsung Fail on this test is an **expected known limitation**, not a regression.
-> Document the result as KNOWN-FAIL (Samsung One UI).
+| Home screen → tap Exchange button | Exchange screen opens, gesture gate appears | |
+| QS tile tap from notification shade | Exchange screen opens | |
+| Repeat on Samsung Galaxy and Xiaomi | Same result — no OEM interception issues | |
 
 ---
 
@@ -179,9 +177,9 @@ adb -s <samsung-serial> install -r app/build/outputs/apk/release/*.apk
 
 | Scenario | Device | Expected result | Reason |
 |---|---|---|---|
-| S3 volume-button triple-press | Samsung Galaxy (One UI) | FAIL | MediaSession `setActive()` does not intercept volume keys on One UI |
-| S3 volume-button triple-press | Xiaomi MIUI | FAIL | MIUI intercepts volume keys at system level |
-| S3 volume-button triple-press | Pixel (stock) | PASS | No OEM key interception |
+| S3 Exchange button tap | Samsung Galaxy (One UI) | PASS | In-app activation — no OEM interception |
+| S3 Exchange button tap | Xiaomi MIUI | PASS | In-app activation — no OEM interception |
+| S3 Exchange button tap | Pixel (stock) | PASS | In-app activation |
 
 ---
 
@@ -190,7 +188,7 @@ adb -s <samsung-serial> install -r app/build/outputs/apk/release/*.apk
 ```
 [ ] All S1–S11 scenarios run on Pixel 8 (Android 14)
 [ ] All S1–S11 scenarios run on Samsung A-series (Android 12 or 13)
-[ ] Samsung S3 FAIL documented as KNOWN-FAIL (not a regression)
+[ ] S3 PASS on all OEM devices (volume-button trigger removed)
 [ ] No crashes observed in logcat during the pass
 [ ] No new ANRs in logcat
 [ ] APK size within 30 MB (verified by CI or manual du -k)

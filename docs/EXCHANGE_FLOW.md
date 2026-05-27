@@ -1,6 +1,6 @@
 # Exchange flow
 
-> An exchange begins when **both** users have triggered AURA, the gesture/biometric gate has cleared on each side, and the two phones are within Nearby Connections range. The sequence below walks every byte sent in a successful direct exchange.
+> An exchange begins when both users open AURA and tap Exchange, the gesture/biometric gate has cleared on each side, and the two phones are within Nearby Connections range. The sequence below walks every byte sent in a successful direct exchange.
 
 ---
 
@@ -28,8 +28,8 @@ sequenceDiagram
     participant NCB as B: NearbyExchangeService
     participant AppB as B: AURA
 
-    A->>AppA: triple-press vol ▼
-    B->>AppB: triple-press vol ▼
+    A->>AppA: open app → tap Exchange
+    B->>AppB: open app → tap Exchange
     AppA->>AppA: gesture / biometric gate ✅
     AppB->>AppB: gesture / biometric gate ✅
     AppA->>NCA: start()
@@ -87,8 +87,8 @@ sequenceDiagram
 
     NCA->>AppA: ExchangeSession.State.Completed
     NCB->>AppB: ExchangeSession.State.Completed
-    AppA-->>A: "Exchanged with {B}!"
-    AppB-->>B: "Exchanged with {A}!"
+    AppA-->>A: ExchangeSuccessBottomSheet (contact name, phone, email)
+    AppB-->>B: ExchangeSuccessBottomSheet (contact name, phone, email)
 ```
 
 ### Notes on the phases

@@ -48,18 +48,18 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## 4. Release signing — locally
 
-The release signing block in [`app/build.gradle.kts`](../app/build.gradle.kts) reads four env vars:
+The release signing block in [`app/build.gradle.kts`](../app/build.gradle.kts) reads four env vars. In CI these are sourced from GitHub Secrets; locally you export them before building:
 
 ```bash
-export KEYSTORE_PATH=/abs/path/to/aura-release.keystore
+export KEYSTORE_BASE64=$(base64 -w0 /abs/path/to/aura-release.keystore)
 export KEYSTORE_STORE_PASSWORD=...
-export KEYSTORE_KEY_ALIAS=aura
+export KEYSTORE_KEY_ALIAS=aura-release
 export KEYSTORE_KEY_PASSWORD=...
 
 ./gradlew assembleRelease
 ```
 
-If `KEYSTORE_PATH` is unset **or** the empty string, Gradle skips the signing config entirely and produces an unsigned APK — that's what CI does (see [`features/22-release-ci.md`](features/22-release-ci.md)).
+The build script decodes `KEYSTORE_BASE64` to a temp file at configure time. If `KEYSTORE_BASE64` is unset or empty, Gradle skips the signing block and produces an unsigned APK — that's the default CI behaviour for PR builds.
 
 > The signed APK lands at `app/build/outputs/apk/release/app-release.apk`. Verify with `apksigner verify --verbose app-release.apk`.
 
@@ -106,8 +106,9 @@ There are intentionally only two: `debug` and `release`. We have not added stagi
 
 | Variant | App-id | versionName | Logging | Minify | Signing |
 |---|---|---|---|---|---|
-| debug | `com.showerideas.aura.debug` | `1.1.0-debug` | `BuildConfig.ENABLE_LOGGING=true` | off | debug keystore |
-| release | `com.showerideas.aura` | `1.1.0` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
+| debug | `com.showerideas.aura.debug` | `4.0.0-debug` | `BuildConfig.ENABLE_LOGGING=true` | off | debug keystore |
+| foss | `com.showerideas.aura` | `4.0.0-foss` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
+| release | `com.showerideas.aura` | `4.0.0` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
 
 `Timber.plant(DebugTree())` is gated on `ENABLE_LOGGING`, so the release APK does not emit logs.
 

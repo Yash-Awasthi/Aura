@@ -44,11 +44,12 @@ flowchart LR
 | **Profile** edit | Tap *Edit profile* on Home | `docs/assets/03-profile-edit.png` |
 | **Gesture record** | Profile → *Record gesture* | `docs/assets/04-gesture-record.png` |
 | **Home** (idle) | App at rest | `docs/assets/05-home-idle.png` |
-| **Home** (pulsing, activated) | After triple-press vol ▼ | `docs/assets/06-home-pulse.png` |
+| **Home** (pulsing, activated) | After tapping Exchange | `docs/assets/06-home-pulse.png` |
 | **Exchange gate** (gesture prompt) | Activation succeeded | `docs/assets/07-exchange-gate.png` |
-| **Exchange success** toast | Both phones matched | `docs/assets/08-exchange-success.png` |
-| **Contacts** list | Tab → *Contacts* | `docs/assets/09-contacts-list.png` |
-| **Contact detail** bottom sheet | Tap a contact | `docs/assets/10-contact-detail.png` |
+| **Exchange success** sheet | Both phones matched | `docs/assets/08-exchange-success.png` |
+| **Contacts — My Contacts tab** | Tab → *My Contacts* | `docs/assets/09-contacts-list.png` |
+| **Contacts — History tab** | Tab → *History* | `docs/assets/09b-contacts-history.png` |
+| **Contact detail** bottom sheet | Tap a contact row | `docs/assets/10-contact-detail.png` |
 | **QR fallback** | Home → *QR* | `docs/assets/11-qr-fallback.png` |
 | **Room mode** (host) | Home → *Room* → *Host* | `docs/assets/12-room-host.png` |
 | **Settings** | Home → ⚙️ | `docs/assets/13-settings.png` |
