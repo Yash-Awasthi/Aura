@@ -160,8 +160,9 @@ class HybridIdentityKey @Inject constructor() {
         val kf = KeyFactory.getInstance("EC")
         ecPriv = kf.generatePrivate(PKCS8EncodedKeySpec(ecPrivDer)) as ECPrivateKey
         ecPub  = kf.generatePublic(X509EncodedKeySpec(ecPubDer)) as ECPublicKey
-        // BC 1.79: no (DilithiumParameters, ByteArray) constructor — unpack fields manually.
-        // dilithium3 (FIPS 204): rho=32, K=32, tr=64, s1=640, s2=768, t0=2496 (total 4032 bytes)
+        // BC 1.79: constructor requires (params, rho, K, tr, s1, s2, t0, t1).
+        // dilithium3 (FIPS 204 / ML-DSA-65): rho=32, K=32, tr=64, s1=640, s2=768, t0=2496
+        // Public key encoding is rho(32) || t1(1920) — extract t1 from there.
         var pos = 0
         val privRho = mlPrivBytes.copyOfRange(pos, pos + 32);  pos += 32
         val privK   = mlPrivBytes.copyOfRange(pos, pos + 32);  pos += 32
@@ -169,7 +170,8 @@ class HybridIdentityKey @Inject constructor() {
         val privS1  = mlPrivBytes.copyOfRange(pos, pos + 640); pos += 640
         val privS2  = mlPrivBytes.copyOfRange(pos, pos + 768); pos += 768
         val privT0  = mlPrivBytes.copyOfRange(pos, pos + 2496)
-        mlDsaPriv = DilithiumPrivateKeyParameters(DilithiumParameters.dilithium3, privRho, privK, privTr, privS1, privS2, privT0)
+        val privT1  = mlPubBytes.copyOfRange(32, mlPubBytes.size) // t1 encoded in public key
+        mlDsaPriv = DilithiumPrivateKeyParameters(DilithiumParameters.dilithium3, privRho, privK, privTr, privS1, privS2, privT0, privT1)
         mlDsaPub  = DilithiumPublicKeyParameters(DilithiumParameters.dilithium3, mlPubBytes)
         Timber.d("HybridIdentityKey loaded")
     }
