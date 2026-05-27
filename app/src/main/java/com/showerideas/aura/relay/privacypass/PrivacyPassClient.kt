@@ -1,6 +1,5 @@
 package com.showerideas.aura.relay.privacypass
 
-import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -94,10 +93,8 @@ class PrivacyPassClient @Inject constructor(
             Timber.w("PrivacyPassClient: no tokens available for redemption")
             return null
         }
-        val encoded = Base64.encodeToString(
-            token.nonce + token.signature,
-            Base64.URL_SAFE or Base64.NO_WRAP
-        )
+        val encoded = java.util.Base64.getUrlEncoder().withoutPadding()
+            .encodeToString(token.nonce + token.signature)
         Timber.d("PrivacyPassClient: redeeming token (${token.nonce.size + token.signature.size} bytes)")
         return "token=$encoded"
     }
