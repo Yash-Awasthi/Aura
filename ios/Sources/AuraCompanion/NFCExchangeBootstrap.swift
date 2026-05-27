@@ -16,6 +16,11 @@
 // Must match AID_AURA_EXCHANGE in AuraHceService.kt.
 
 import Foundation
+
+// CoreNFC is an iOS-only framework — not available on macOS (Swift Package
+// targets that include macOS in their platform list, e.g. for CI). Guard the
+// entire file so the macOS toolchain skips it cleanly.
+#if canImport(CoreNFC)
 import CoreNFC
 
 @available(iOS 13.0, *)
@@ -167,3 +172,5 @@ extension NFCExchangeBootstrap: NFCTagReaderSessionDelegate {
         }
     }
 }
+
+#endif // canImport(CoreNFC)
