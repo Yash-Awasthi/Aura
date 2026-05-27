@@ -45,7 +45,7 @@ class HybridIdentityKeyTest {
     @Test
     fun `corrupted ml-dsa sig fails verification`() {
         val sig = key.sign(testData)
-        val badMlDsa = sig.mlDsaSig.copyOf().also { it[10] = it[10].xor(0xFF.toByte()) }
+        val badMlDsa = sig.mlDsaSig.copyOf().also { it[10] = (it[10].toInt() xor 0xFF).toByte() }
         val badSig = HybridSignature(sig.p256Sig, badMlDsa)
         val ok = key.verify(testData, badSig, key.ecPublicKey(), key.mlDsaPublicKey())
         assertFalse("Corrupted ML-DSA sig must not verify", ok)
