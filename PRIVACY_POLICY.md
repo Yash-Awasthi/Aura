@@ -83,7 +83,7 @@ AURA is not directed at children under 13. It does not knowingly process data fr
 
 ## 7. Changes to this policy
 
-If we ever change this policy we will update the **Effective date** at the top and publish the new version at <https://showerideas.app/aura/privacy>. Substantive changes will also be announced in the app's release notes on Google Play.
+If we ever change this policy we will update the **Effective date** at the top and publish the new version at <https://showerideas.app/aura/privacy>. Substantive changes will also be announced in the app's release notes on GitHub Releases.
 
 ---
 

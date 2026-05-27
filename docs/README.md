@@ -18,7 +18,6 @@
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branch / PR conventions, commit style, required checks |
 | [`AUDIT.md`](AUDIT.md) | Intent fulfilment audit — every README claim cross-referenced to code |
 | [`MANUAL_QA_PASS.md`](MANUAL_QA_PASS.md) | Manual QA recipe — step-by-step device test script |
-| [`FDROID_SUBMISSION.md`](FDROID_SUBMISSION.md) | F-Droid submission checklist, reproducible build verification, metadata YAML |
 | [`ZK_SNARK_BENCHMARK.md`](ZK_SNARK_BENCHMARK.md) | Groth16 gesture proof benchmark — circuit stats, prover/verifier timing, JNI bridge |
 | [`GESTURE_CLASSIFIER_AB_TEST.md`](GESTURE_CLASSIFIER_AB_TEST.md) | A/B test report — cosine-only vs spread-normalised confidence gate; EER analysis |
 | [`FIDO2_LATENCY.md`](FIDO2_LATENCY.md) | CTAP2 latency budget — gesture capture window within 30-second authenticator timeout |

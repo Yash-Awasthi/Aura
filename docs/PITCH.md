@@ -58,7 +58,7 @@ A post-quantum key exchange executes in the background — ML-KEM-768 and ML-DSA
 ### Who Uses This
 
 - **Enterprises and regulated industries** — financial services, healthcare, defense. MDM policy enforcement, zero-touch enrollment, audit log export, differential privacy analytics. Your org controls the policy; AURA enforces it.
-- **Privacy-conscious consumers** — no account, no cloud sync, no data to breach. F-Droid distributed — no Play Store surveillance layer.
+- **Privacy-conscious consumers** — no account, no cloud sync, no data to breach. GitHub Releases distributed — no app store surveillance layer.
 - **Government and law enforcement** — post-quantum crypto already mandatory under NSM-10 for national security systems. AURA is architected to that standard today.
 - **Events and networking** — conference halls, trade shows, anywhere QR fatigue is real and you need 50 reliable exchanges per hour.
 
@@ -77,7 +77,7 @@ Priority 3: Wi-Fi Direct P2P — higher throughput for large payloads
 Priority 4: QR relay         — HTTPS + OHTTP; relay sees only AES-256-GCM ciphertext
 ```
 
-The fallback chain is automatic and transparent to the user. FOSS builds (F-Droid) use Wi-Fi Direct; GMS builds (sideload) use Nearby Connections. No Google dependency required.
+The fallback chain is automatic and transparent to the user. FOSS builds use Wi-Fi Direct (no GMS); GMS builds use Nearby Connections. Both are distributed as signed APKs via GitHub Releases — no app store dependency.
 
 ### Cryptographic Stack
 
@@ -148,7 +148,7 @@ Kotlin files:     328 across app / wearos / automotive / desktop / ios modules
 Test files:       90+ unit + 16 instrumented + 36 iOS AuraCore
 Coverage floor:   JaCoCo 60% branch coverage enforced in CI
 Localization:     365 strings × 7 languages
-Distribution:     F-Droid reproducible build (PR #74 merged), signed AAB sideload
+Distribution:     Signed APKs published to GitHub Releases on every version tag
 CI:               GitHub Actions — build / lint / test / sign / release pipeline
 ```
 
@@ -183,9 +183,8 @@ Harvest-now-decrypt-later attacks are already in progress against government and
 - Full post-quantum cryptographic stack — ML-KEM-768, ML-DSA-65, PQXDH, Double Ratchet, MLS — all production-wired, not stubs
 - ZK-SNARK Groth16 gesture proofs, AR/XR exchange overlays, DIDComm v2 + ISO 18013-7 mDL, MPC 2-of-3 threshold audit signing — shipped in v5.6
 - Decentralized identity (did:key, did:peer:2, did:web) and ML Kit OCR business card import — graduated from R&D in v5.7
-- F-Droid reproducible build verified and submitted
 - CI/CD pipeline with signed APK/AAB release artifacts on every tag
-- Zero Play Store dependency — distribution is fully self-sovereign
+- Zero app store dependency — distribution is fully self-sovereign via GitHub Releases
 
 ---
 

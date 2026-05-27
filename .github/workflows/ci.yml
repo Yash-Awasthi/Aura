@@ -1,19 +1,16 @@
-# PR-22 / v1.3: GitHub Actions CI for AURA.
+# GitHub Actions CI for AURA.
 #
 # Every PR and every push to main runs:
 #
-#   1. testDebugUnitTest   — JVM unit tests. ~1 minute on a clean runner.
-#   2. lintGmsDebug        — Android Lint. Fails on new issues.
-#   3. assembleGmsRelease  — Full GMS release build (R8 + shrinking). Unsigned in CI.
-#      assembleFossRelease — FOSS (Wi-Fi Direct) build. Both validate ProGuard rules.
-#   4. check-mediapipe-classes — Prompt-5: assert MediaPipe classes survived R8.
-#   5. check-apk-size      — Prompt-15: fail if APK exceeds size thresholds.
+#   1. testDebugUnitTest        — JVM unit tests. ~1 minute on a clean runner.
+#   2. lintGmsDebug             — Android Lint. Fails on new issues.
+#   3. assembleGmsRelease       — Full GMS release build (R8 + shrinking). Unsigned in CI.
+#      assembleFossRelease      — Wi-Fi Direct transport build. Both validate ProGuard rules.
+#   4. check-mediapipe-classes  — Assert MediaPipe classes survived R8.
+#   5. check-apk-size           — Fail if APK exceeds size thresholds.
 #
 # Note: INTERNET permission is intentionally declared (QR relay POST feature).
-#
-# On push to main only (gated on `build` passing):
-#   7. upload-to-play      — Signs and uploads to Play Console internal track.
-#
+# Signed APK releases are handled by release.yml (triggered on version tags).
 # androidTest runs in the parallel instrumented.yml workflow.
 name: CI
 
@@ -89,11 +86,11 @@ jobs:
       - name: Android Lint (lintGmsDebug)
         run: ./gradlew lintGmsDebug --stacktrace
 
-      # Phase 6.2: build both transport flavor variants.
-      # assembleGmsRelease  — standard GMS build (Google Play target).
-      # assembleFossRelease — GMS-free Wi-Fi Direct transport build (F-Droid target).
-      # Both are unsigned in CI (KEYSTORE_PATH empty); signed builds happen in
-      # the upload-to-play job below which has access to the keystore secrets.
+      # Build both transport flavor variants to validate ProGuard rules on each.
+      # assembleGmsRelease  — Nearby Connections transport (primary GMS build).
+      # assembleFossRelease — Wi-Fi Direct transport (no GMS dependency).
+      # Both are unsigned in CI (KEYSTORE_PATH empty); signed release APKs are
+      # produced by release.yml when a version tag is pushed.
       - name: Assemble GMS release (assembleGmsRelease)
         run: ./gradlew assembleGmsRelease --stacktrace
         env:
@@ -112,63 +109,9 @@ jobs:
           KEYSTORE_KEY_PASSWORD: ""
           GESTURE_MODEL_SHA256: ${{ vars.GESTURE_MODEL_SHA256 }}
 
-      # T6: F-Droid reproducible build verification.
-      # Build the FOSS APK a second time and compare it byte-for-byte with the
-      # first build using diffoscope (or a fallback sha256sum comparison).
-      # Any non-determinism (timestamps, random seeds, build-machine paths) will
-      # produce a diff and fail this step, preventing a non-reproducible release.
       - name: Validate gesture bundle
         run: ./scripts/validate_gesture_bundle.sh app/src/main/assets/gesture_recognizer.task
         env:
-          GESTURE_MODEL_SHA256: ${{ vars.GESTURE_MODEL_SHA256 }}
-
-      - name: F-Droid reproducible build check (zipdiff)
-        run: |
-          # Record SHA-256 of all FOSS APK entries from first build
-          FOSS_APK=$(find app/build/outputs/apk/foss/release -name "*.apk" | head -1)
-          if [ -z "$FOSS_APK" ]; then
-            echo "SKIP: No FOSS APK found (may be expected on non-FOSS runners)"
-            exit 0
-          fi
-          echo "First build APK: $FOSS_APK"
-          SHA1=$(sha256sum "$FOSS_APK" | awk '{print $1}')
-          echo "SHA-256 build 1: $SHA1"
-
-          # Second FOSS build with clean outputs (keep Gradle daemon + caches)
-          rm -f "$FOSS_APK"
-          ./gradlew assembleFossRelease --stacktrace
-          FOSS_APK2=$(find app/build/outputs/apk/foss/release -name "*.apk" | head -1)
-          SHA2=$(sha256sum "$FOSS_APK2" | awk '{print $1}')
-          echo "SHA-256 build 2: $SHA2"
-
-          if [ "$SHA1" = "$SHA2" ]; then
-            echo "PASS: FOSS APK is reproducible (both builds identical)"
-          else
-            echo "WARN: APK SHA-256 differs between builds — checking per-entry hashes..."
-            # Per-entry comparison using unzip -p + sha256sum for actionable diff
-            unzip -l "$FOSS_APK2" | tail -n +4 | head -n -2 | awk '{print $4}' | sort > /tmp/entries.txt
-            DIFF_COUNT=0
-            while IFS= read -r entry; do
-              H1=$(unzip -p "$FOSS_APK"  "$entry" 2>/dev/null | sha256sum | awk '{print $1}')
-              H2=$(unzip -p "$FOSS_APK2" "$entry" 2>/dev/null | sha256sum | awk '{print $1}')
-              if [ "$H1" != "$H2" ]; then
-                echo "  DIFF: $entry"
-                DIFF_COUNT=$(( DIFF_COUNT + 1 ))
-              fi
-            done < /tmp/entries.txt
-            if [ "$DIFF_COUNT" -gt 0 ]; then
-              echo "FAIL: $DIFF_COUNT entries differ between builds. Non-reproducible build detected."
-              echo "Check for embedded timestamps, random seeds, or build-path references."
-              exit 1
-            else
-              echo "PASS: All APK entries match (outer ZIP metadata differs — acceptable)."
-            fi
-          fi
-        env:
-          KEYSTORE_PATH: ""
-          KEYSTORE_STORE_PASSWORD: ""
-          KEYSTORE_KEY_ALIAS: ""
-          KEYSTORE_KEY_PASSWORD: ""
           GESTURE_MODEL_SHA256: ${{ vars.GESTURE_MODEL_SHA256 }}
 
       # Prompt-5: assert MediaPipe classes survived R8. Without the -keep rules
@@ -254,84 +197,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # ---------------------------------------------------------------------------
-  # upload-to-play: build a signed AAB and push to Play Console internal track.
-  # ---------------------------------------------------------------------------
-  upload-to-play:
-    name: Upload signed AAB to Play Console (internal)
-    needs: [build]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    # secrets cannot be referenced in job-level `if:` expressions — GitHub
-    # Actions treats the secrets context as unavailable there. Instead we gate
-    # on push-to-main only, then check for the keystore secret inside the
-    # first step and skip all signing/upload steps when it is absent.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Check signing credentials configured
-        id: creds
-        env:
-          KEY_B64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          if [ -z "$KEY_B64" ]; then
-            echo "KEYSTORE_BASE64 not set — skipping Play Console upload."
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "configured=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Checkout
-        if: steps.creds.outputs.configured == 'true'
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        if: steps.creds.outputs.configured == 'true'
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Set up Gradle
-        if: steps.creds.outputs.configured == 'true'
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Cache MediaPipe gesture model
-        if: steps.creds.outputs.configured == 'true'
-        uses: actions/cache@v4
-        with:
-          path: app/src/main/assets/gesture_recognizer.task
-          key: mediapipe-gesture-model-${{ vars.GESTURE_MODEL_SHA256 || 'latest' }}
-
-      - name: Decode keystore
-        if: steps.creds.outputs.configured == 'true'
-        env:
-          KEY_B64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: |
-          echo "$KEY_B64" | base64 --decode > /tmp/release.keystore
-
-      - name: Build signed release bundle (bundleRelease)
-        if: steps.creds.outputs.configured == 'true'
-        run: ./gradlew bundleRelease --stacktrace
-        env:
-          KEYSTORE_PATH: /tmp/release.keystore
-          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
-          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
-          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
-          GESTURE_MODEL_SHA256: ${{ vars.GESTURE_MODEL_SHA256 }}
-
-      - name: Shred keystore temp file
-        if: always()
-        run: shred -u /tmp/release.keystore || true
-
-      - name: Upload signed AAB to Play Console internal track
-        if: steps.creds.outputs.configured == 'true'
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
-          packageName: com.showerideas.aura
-          releaseFiles: app/build/outputs/bundle/release/*.aab
-          track: internal
-          status: completed
-          changesNotSentForReview: true
