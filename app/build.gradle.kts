@@ -306,6 +306,10 @@ dependencies {
     // Phase 8.1 — BouncyCastle PQC: ML-KEM-768 post-quantum KEM
     implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
     implementation("org.bouncycastle:bcpqc-jdk18on:1.78.1")
+    // Phase 7 (T83) — FIDO2 CredentialManager provider (AuraCredentialProviderService + PasskeyGestureGateActivity)
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+
     // Android Auto — Car App Library (Phase 7.3)
     implementation("androidx.car.app:app:1.4.0")
 

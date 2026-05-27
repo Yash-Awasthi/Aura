@@ -94,9 +94,9 @@ See: [DID Core 1.0](https://w3.org/TR/did-core/)
 See: [did:peer method](https://identity.foundation/peer-did-method-spec/)
 See: [did:web method](https://w3c-ccg.github.io/did-method-web/)
 
-- [R&D] `did:peer:2` prototype: encode AURA exchange public key as `did:peer:2.<base58(keyType+keyBytes)>`
+- [x] `did:peer:2` encode: AURA exchange public key as `did:peer:2.<base58(keyType+keyBytes)>` — shipped v5.7
+- [x] `DidResolver.kt`: resolves `did:key` (local), `did:web` (HTTP GET + cache), `did:peer:2` (decode) — shipped v5.7
 - [R&D] `did:web` publishing UI: Settings → Identity → "Publish DID Document"
-- [R&D] `DidResolver.kt`: resolves `did:key` (local), `did:web` (HTTP GET + cache), `did:peer:2` (decode)
 
 ---
 
@@ -136,7 +136,7 @@ See: [Matter SDK — project-chip/connectedhomeip](https://github.com/project-ch
 See: [ML Kit Text Recognition v2](https://developers.google.com/ml-kit/vision/text-recognition/android)
 See: [Android AICore — Gemini Nano](https://developer.android.com/ai/aicore)
 
-- [R&D] Prototype `BusinessCardImporter.kt` with ML Kit OCR + Gemini Nano structured extraction
+- [x] `BusinessCardImporter.kt`: ML Kit OCR pipeline + regex field parser + 15 unit tests — shipped v5.7
 - [R&D] Accuracy benchmark: 50 business cards, target > 90% email+phone extraction on Latin script
 
 ---
@@ -199,7 +199,8 @@ See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-a
 | v5.4 | 2026-05-27 | Phase 9: AR (ARCore) + Android XR spatial contact card exchange |
 | v5.5 | 2026-05-27 | Phase 10: DIDComm v2 messaging + ISO 18013-7 async mDL presentation |
 | v5.6 | 2026-05-27 | Phase 11: MPC 2-of-3 threshold audit signing + Privacy Pass relay rate limiting |
+| v5.7 | 2026-05-27 | R&D-D graduated: DidResolver (did:key · did:peer:2 · did:web) + encodePeer2Did. R&D-N graduated: BusinessCardImporter ML Kit OCR pipeline. FIDO2 PasskeyGestureGateActivity fully wired (T84). |
 
 ---
 
-*Last updated: 2026-05-27 — All Phases 5–11 (Tasks 67–118) complete and merged to main. v5.6 baseline achieved. R&D-D, H, M, N, P, Q, X retained as research-only with unchanged trigger conditions.*
+*Last updated: 2026-05-27 — All Phases 5–11 (Tasks 67–118) complete and merged to main. v5.7 baseline. Remaining R&D: D (did:web UI), H, M, N (Gemini Nano benchmark), P, Q, X — research-only with unchanged trigger conditions.*

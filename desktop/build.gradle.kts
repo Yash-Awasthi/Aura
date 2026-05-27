@@ -8,18 +8,20 @@
 // Supported targets: macOS (arm64 + x64), Linux (x64), Windows (x64).
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    // Use id() without a version — the root build.gradle.kts already preloads
+    // this plugin via `alias(libs.plugins.kotlin.jvm) apply false`.
+    // Using alias(libs.plugins.kotlin.jvm) here would include an explicit version
+    // and trigger Gradle 8.13's "already on classpath with unknown version" error.
+    id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.compose") version "1.6.10"
 }
 
 group   = "com.showerideas.aura"
 version = "1.0.0"
 
-repositories {
-    google()
-    mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-}
+// Repositories are declared globally in settings.gradle.kts
+// (dependencyResolutionManagement with FAIL_ON_PROJECT_REPOS).
+// Do NOT add a repositories {} block here.
 
 kotlin {
     jvmToolchain(17)
