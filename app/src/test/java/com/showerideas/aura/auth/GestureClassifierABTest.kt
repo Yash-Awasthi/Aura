@@ -160,12 +160,12 @@ class GestureClassifierABTest {
 
         // Security assertion: random impostors must almost never pass
         assertTrue(
-            "Config B FAR must be ≤ 5% against random impostors (got %.1f%%)".format(fullFAR * 100),
+            "Config B FAR must be ≤ 5%% against random impostors (got %.1f%%)".format(fullFAR * 100),
             fullFAR <= 0.05f
         )
         // Usability assertion: low-noise genuines should be accepted at a high rate
         assertTrue(
-            "Config B FRR must be ≤ 30% with noise=%.2f (got %.1f%%)".format(GENUINE_NOISE, fullFRR * 100),
+            "Config B FRR must be ≤ 30%% with noise=%.2f (got %.1f%%)".format(GENUINE_NOISE, fullFRR * 100),
             fullFRR <= 0.30f
         )
     }
@@ -197,7 +197,7 @@ class GestureClassifierABTest {
 
         // Security maintained even under high noise: impostors must still be blocked
         assertTrue(
-            "FAR must stay ≤ 10% even at high noise=%.2f (got %.1f%%)".format(highNoise, fullFAR * 100),
+            "FAR must stay ≤ 10%% even at high noise=%.2f (got %.1f%%)".format(highNoise, fullFAR * 100),
             fullFAR <= 0.10f
         )
     }

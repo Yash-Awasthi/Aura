@@ -136,7 +136,7 @@ class QRExchangeViewModel @Inject constructor(
         return try {
             val bitMatrix = MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, QR_SIZE_PX, QR_SIZE_PX)
             BarcodeEncoder().createBitmap(bitMatrix)
-        } catch (e: WriterException) {
+        } catch (e: Exception) {
             Timber.e(e, "Failed to render QR bitmap")
             null
         }
