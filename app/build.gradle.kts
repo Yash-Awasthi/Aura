@@ -6,17 +6,11 @@ import java.security.MessageDigest
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.navigation.safeargs)
     // Prompt-10: JaCoCo coverage reporting for JVM unit tests.
     jacoco
-}
-
-// Kotlin 2.0 + kapt: correctErrorTypes prevents stub-generation failures when
-// kapt falls back to 1.9 mode and encounters K2-compiled metadata.
-kapt {
-    correctErrorTypes = true
 }
 
 android {
@@ -71,14 +65,6 @@ android {
         // Phase 9 (T98) — AR exchange overlay (enterprise feature flag).
         buildConfigField("boolean", "ENABLE_AR_EXCHANGE", "false")
 
-        // PR-04: Export Room schemas so future migrations can be tested
-        // against the historical schema files. The schemas directory is
-        // committed to source control.
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments["room.schemaLocation"] = "$projectDir/schemas"
-            }
-        }
     }
 
     // Make the schemas directory available to androidTest for MigrationTestHelper.
@@ -229,6 +215,13 @@ android {
     }
 }
 
+// PR-04: Export Room schemas so KSP writes schema JSON files for migration testing.
+// With kapt this lived in defaultConfig.javaCompileOptions.annotationProcessorOptions;
+// with KSP it moves to a top-level ksp {} block.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)
@@ -248,11 +241,11 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
@@ -308,7 +301,7 @@ dependencies {
     // T11 — UWB proximity confirmation (API 31+, Pixel 6+ and select OEM devices)
     implementation("androidx.core.uwb:uwb:1.0.0-alpha08")
     implementation("androidx.hilt:hilt-work:1.2.0")
-    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
     // Phase 8.1 — BouncyCastle PQC: ML-KEM-768 post-quantum KEM + Dilithium
     // bcprov-jdk18on includes org.bouncycastle.pqc.* (mlkem, crystals.dilithium) since 1.72+.
     // bcpqc-jdk18on does not exist as a separate Maven Central artifact.
