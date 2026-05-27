@@ -193,7 +193,7 @@ class MlsGroupState(
         hmacSha256(epochSec, ctx + CONFIRMATION_TAG.toByteArray())
 
     private fun hkdf(salt: ByteArray, ikm: ByteArray, info: String): ByteArray {
-        val prk = hmacSha256(salt.ifEmpty { ByteArray(KEY_LEN) }, ikm)
+        val prk = hmacSha256(if (salt.isEmpty()) ByteArray(KEY_LEN) else salt, ikm)
         return hmacSha256(prk, info.toByteArray(Charsets.UTF_8) + byteArrayOf(0x01))
     }
 

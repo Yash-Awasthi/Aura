@@ -257,6 +257,8 @@ dependencies {
     // Wearable Data Layer — phone-side sender for Wear OS tile integration (Phase F1).
     // Optional dependency: the app degrades gracefully when no watch is paired.
     "gmsImplementation"("com.google.android.gms:play-services-wearable:18.2.0")
+    // Required for kotlinx.coroutines.tasks.await() on Play Services Task<T>
+    "gmsImplementation"(libs.kotlinx.coroutines.play.services)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
@@ -305,7 +307,7 @@ dependencies {
     // Phase 8.1 — BouncyCastle PQC: ML-KEM-768 post-quantum KEM + Dilithium
     // bcprov-jdk18on includes org.bouncycastle.pqc.* (mlkem, crystals.dilithium) since 1.72+.
     // bcpqc-jdk18on does not exist as a separate Maven Central artifact.
-    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.79")
     // Phase 7 (T83) — FIDO2 CredentialManager provider (AuraCredentialProviderService + PasskeyGestureGateActivity)
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")

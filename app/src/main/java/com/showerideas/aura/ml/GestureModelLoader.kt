@@ -2,7 +2,6 @@ package com.showerideas.aura.ml
 
 import android.content.Context
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
-import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerOptions
 import com.google.mediapipe.tasks.core.BaseOptions
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
@@ -77,7 +76,7 @@ class GestureModelLoader @Inject constructor(
             .setModelAssetPath(modelPath)
             .build()
 
-        val options = GestureRecognizerOptions.builder()
+        val options = GestureRecognizer.GestureRecognizerOptions.builder()
             .setBaseOptions(baseOptions)
             .setNumHands(numHands)
             .setRunningMode(com.google.mediapipe.tasks.vision.core.RunningMode.LIVE_STREAM)

@@ -1,7 +1,6 @@
 package com.showerideas.aura.ar
 
 import android.content.Context
-import android.uwb.UwbManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -72,11 +71,11 @@ class ArExchangeCoordinator @Inject constructor(
 
     // ── UWB availability ─────────────────────────────────────────────────────
 
+    // android.uwb.UwbManager is a hidden/system API and not in the public SDK jar.
+    // Use PackageManager feature flag instead — available on all API levels.
     private val isUwbAvailable: Boolean by lazy {
         android.os.Build.VERSION.SDK_INT >= 31 &&
-            runCatching {
-                context.getSystemService(UwbManager::class.java) != null
-            }.getOrDefault(false)
+            context.packageManager.hasSystemFeature("android.hardware.uwb")
     }
 
     // ── Public API ────────────────────────────────────────────────────────────

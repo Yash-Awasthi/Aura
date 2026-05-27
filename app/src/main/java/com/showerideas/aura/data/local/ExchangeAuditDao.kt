@@ -30,6 +30,10 @@ interface ExchangeAuditDao {
     @Query("SELECT * FROM exchange_audit_log WHERE peerIdentityKeyHash = :hash ORDER BY timestampMs DESC")
     fun observeForPeer(hash: String): Flow<List<ExchangeAuditEntry>>
 
+    /** All entries as a one-shot list — used by AuditExportWorker for CSV export. */
+    @Query("SELECT * FROM exchange_audit_log ORDER BY timestampMs DESC")
+    suspend fun getAll(): List<ExchangeAuditEntry>
+
     /** Count of all audit entries (for badge/indicator). */
     @Query("SELECT COUNT(*) FROM exchange_audit_log")
     suspend fun count(): Int

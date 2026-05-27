@@ -68,7 +68,9 @@ object PQXDHSender {
 
         // Decode recipient keys
         val spkBPub  = X25519PublicKeyParameters(bundle.signedPreKeyPublic)
-        val ikBPub   = X25519PublicKeyParameters(bundle.identityPublicKey.takeLast(32).toByteArray())
+        // Use copyOfRange to avoid List<Byte>.toByteArray() overload ambiguity in K2
+        val ikBPubBytes: ByteArray = bundle.identityPublicKey.let { it.copyOfRange(it.size - 32, it.size) }
+        val ikBPub   = X25519PublicKeyParameters(ikBPubBytes)
         val ikAPriv  = X25519PrivateKeyParameters(senderIdentityPriv)
         val ekAPriv  = X25519PrivateKeyParameters(ekPriv)
         val ekAPub   = X25519PublicKeyParameters(ekPub)

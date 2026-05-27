@@ -149,11 +149,14 @@ object StrongBoxKeyManager {
                 is KeyStore.PrivateKeyEntry -> entry.privateKey
                 else -> return KeySecurityLevel.UNKNOWN
             }
-            val factory = when (key) {
-                is SecretKey -> SecretKeyFactory.getInstance(key.algorithm, ANDROID_KEYSTORE)
+            // K2 cannot smart-cast 'key' as SecretKey at the getKeySpec call site
+            // even though factory is only non-null when key is SecretKey. Cast explicitly.
+            val secretKey = key as? SecretKey
+            val factory = when {
+                secretKey != null -> SecretKeyFactory.getInstance(secretKey.algorithm, ANDROID_KEYSTORE)
                 else -> null
             }
-            val keyInfo = factory?.getKeySpec(key, KeyInfo::class.java) as? KeyInfo
+            val keyInfo = factory?.getKeySpec(secretKey!!, KeyInfo::class.java) as? KeyInfo
                 ?: return KeySecurityLevel.UNKNOWN
             // securityLevel: int from KeyInfo (API 31+); use raw int values for compatibility
             val level = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
