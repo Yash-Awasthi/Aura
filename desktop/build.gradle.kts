@@ -8,7 +8,7 @@
 // Supported targets: macOS (arm64 + x64), Linux (x64), Windows (x64).
 
 plugins {
-    kotlin("jvm") version "2.0.0"
+    alias(libs.plugins.kotlin.jvm)
     id("org.jetbrains.compose") version "1.6.10"
 }
 
