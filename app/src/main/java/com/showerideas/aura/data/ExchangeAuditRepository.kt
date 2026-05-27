@@ -118,6 +118,9 @@ class ExchangeAuditRepository @Inject constructor(
         )
     )
 
+    /** One-shot list of all entries for export/reporting. */
+    suspend fun getAllEntries(): List<ExchangeAuditEntry> = auditDao.getAll()
+
     suspend fun countFailuresForPeer(hash: String, windowMs: Long = 3_600_000L): Int =
         auditDao.countFailuresForPeer(hash, System.currentTimeMillis() - windowMs)
 

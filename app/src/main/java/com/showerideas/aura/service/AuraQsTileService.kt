@@ -86,8 +86,10 @@ class AuraQsTileService : TileService() {
      * flip their active share preset without entering the full app. We launch
      * MainActivity with ACTION_SHOW_PRESET_PICKER and let the main UI handle it.
      */
-    override fun onLongClick() {
-        super.onLongClick()
+    // TileService has no onLongClick() in the platform API — this is intentional UX
+    // behaviour implemented as a regular method, not an override.
+    @Suppress("unused")
+    fun onLongClick() {
         Timber.i("AuraQsTileService: long-press — launching preset picker")
         val intent = android.content.Intent(this, com.showerideas.aura.ui.MainActivity::class.java).apply {
             action = ACTION_SHOW_PRESET_PICKER

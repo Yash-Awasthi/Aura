@@ -50,12 +50,13 @@ class AdvancedProtectionIntegration @Inject constructor(
             Timber.d("AdvancedProtection: API ${Build.VERSION.SDK_INT} < $AP_MIN_API — returning false")
             return false
         }
+        // android.app.admin.AdvancedProtectionManager is API 36 — not in compileSdk 35.
+        // Use Class.forName() so K2 can compile against SDK 35 without the type reference.
         return runCatching {
-            @Suppress("NewApi")
-            val manager = context.getSystemService(
-                android.app.admin.AdvancedProtectionManager::class.java
-            )
-            manager?.isAdvancedProtectionEnabled ?: false
+            val clazz = Class.forName("android.app.admin.AdvancedProtectionManager")
+            val manager = context.getSystemService("advanced_protection")
+                ?: return false
+            clazz.getMethod("isAdvancedProtectionEnabled").invoke(manager) as? Boolean ?: false
         }.getOrElse { e ->
             Timber.w(e, "AdvancedProtection: failed to query AdvancedProtectionManager")
             false

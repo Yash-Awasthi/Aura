@@ -174,7 +174,7 @@ class ObliviousHttpClient @Inject constructor() {
 
     private fun hkdfExtract(salt: ByteArray, ikm: ByteArray): ByteArray {
         val mac = Mac.getInstance("HmacSHA256")
-        mac.init(SecretKeySpec(salt.ifEmpty { ByteArray(32) }, "HmacSHA256"))
+        mac.init(SecretKeySpec(if (salt.isEmpty()) ByteArray(32) else salt, "HmacSHA256"))
         return mac.doFinal(ikm)
     }
 

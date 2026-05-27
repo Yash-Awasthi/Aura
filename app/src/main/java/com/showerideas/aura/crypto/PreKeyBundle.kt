@@ -61,9 +61,12 @@ data class PreKeyBundle(
         return result
     }
 
-    private fun ByteArray?.contentEquals2(other: ByteArray?): Boolean =
-        if (this == null && other == null) true
-        else this?.contentEquals(other ?: return false) ?: false
+    // K2 prohibits 'return' inside an expression body; converted to block form.
+    private fun ByteArray?.contentEquals2(other: ByteArray?): Boolean {
+        if (this == null && other == null) return true
+        if (this == null || other == null) return false
+        return this.contentEquals(other)
+    }
 }
 
 /**

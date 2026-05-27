@@ -75,10 +75,10 @@ class AuraCredentialProviderService : CredentialProviderService() {
     override fun onClearCredentialStateRequest(
         request: androidx.credentials.provider.ProviderClearCredentialStateRequest,
         cancellationSignal: CancellationSignal,
-        callback: OutcomeReceiver<Unit, ClearCredentialException>
+        callback: OutcomeReceiver<Void?, ClearCredentialException>
     ) {
         // No session state to clear — AURA passkeys are per-relying-party
-        callback.onResult(Unit)
+        callback.onResult(null)
     }
 
     // ── Private helpers ────────────────────────────────────────────────────
