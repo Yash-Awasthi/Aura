@@ -13,12 +13,17 @@
 | [`SECURITY.md`](SECURITY.md) | Threat model, crypto primitives, key lifecycle, TOFU/SAS gap, what AURA does **not** defend against |
 | [`GESTURE_AUTH.md`](GESTURE_AUTH.md) | CameraX + MediaPipe pipeline, 63-float embedding (21 landmarks × x,y,z), temporal liveness, cosine-similarity matching, security properties |
 | [`WIRE_PROTOCOL.md`](WIRE_PROTOCOL.md) | v9 frame specification — version byte, frame types, PQ-KEM key exchange, SAS, sealed sender, relay protocol |
-| [`DATA_MODEL.md`](DATA_MODEL.md) | Room v11 schema, entity diagram (Contact, Profile, BlockedEndpoint, KnownPeer, ExchangeAuditEntry, SharePreset, RoomSession), migration history |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Room v12 schema, entity diagram (Contact, Profile, BlockedEndpoint, KnownPeer, ExchangeAuditEntry, SharePreset, RoomSession, Passkey), migration history |
 | [`BUILD.md`](BUILD.md) | Toolchain, env vars, Gradle targets, CI parity, release signing (KEYSTORE_BASE64) |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branch / PR conventions, commit style, required checks |
 | [`AUDIT.md`](AUDIT.md) | Intent fulfilment audit — every README claim cross-referenced to code |
 | [`MANUAL_QA_PASS.md`](MANUAL_QA_PASS.md) | Manual QA recipe — step-by-step device test script |
-| [`VOLUME_BUTTON_RELIABILITY.md`](VOLUME_BUTTON_RELIABILITY.md) | Historical record — volume-button activation path and why it was removed |
+| [`FDROID_SUBMISSION.md`](FDROID_SUBMISSION.md) | F-Droid submission checklist, reproducible build verification, metadata YAML |
+| [`ZK_SNARK_BENCHMARK.md`](ZK_SNARK_BENCHMARK.md) | Groth16 gesture proof benchmark — circuit stats, prover/verifier timing, JNI bridge |
+| [`GESTURE_CLASSIFIER_AB_TEST.md`](GESTURE_CLASSIFIER_AB_TEST.md) | A/B test report — cosine-only vs spread-normalised confidence gate; EER analysis |
+| [`FIDO2_LATENCY.md`](FIDO2_LATENCY.md) | CTAP2 latency budget — gesture capture window within 30-second authenticator timeout |
+| [`BLOCKLIST_TRANSPARENCY.md`](BLOCKLIST_TRANSPARENCY.md) | Community blocklist protocol — Merkle tree, Bloom filter, opt-in report/warning flow |
+| [`PITCH.md`](PITCH.md) | Investor / technical deep-dive — problem, solution, crypto stack, market opportunity |
 
 ---
 
