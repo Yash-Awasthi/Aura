@@ -59,7 +59,7 @@
 | 🔐 Post-quantum crypto | 🌐 Transport | 🎯 Auth & UX |
 |---|---|---|
 | Hybrid KEM ML-KEM-768+X25519 | Nearby Connections (GMS) | MediaPipe gesture gate |
-| ML-DSA-65 identity signatures | Wi-Fi Direct (FOSS/F-Droid) | Temporal liveness (2-layer) |
+| ML-DSA-65 identity signatures | Wi-Fi Direct (FOSS) | Temporal liveness (2-layer) |
 | PQXDH full prekey bundle | BLE GATT MTU 517 + SCI | Biometric unlock fallback |
 | Noise_XX encrypted channel | NFC HCE ISO 7816-4 | Behavioral continuous auth |
 | Double Ratchet + SPQR | QR relay (HTTPS + OHTTP) | SAS first-meet PIN |
@@ -75,7 +75,7 @@
 | PSI contact discovery | Differential privacy ε=1.0 | JaCoCo 60% branch floor |
 | did:key identity anchors | Signed audit export CSV | TalkBack + AA contrast pass |
 | StrongBox key migration | Android Auto voice gate | 365 strings × 7 locales |
-| Replay + nonce dedup window | Wear OS Health Connect HRV | F-Droid reproducible build |
+| Replay + nonce dedup window | Wear OS Health Connect HRV | GitHub Releases APK distribution |
 | Exchange history tab | PDF analytics export | vCard / Contacts export |
 
 ---
@@ -201,7 +201,7 @@ Each exchange opens a **fresh post-quantum hybrid KEM** (ML-KEM-768+X25519), der
 - [x] **v1.0.0** — gesture gate (MediaPipe), ECDH+HKDF, room exchange, QR fallback, blocklist, replay protection, biometric, accessibility, settings, R8-shrunk release APK
 - [x] **v1.1.0** — QR relay, 7 locales (HI, ES, FR, DE, JA, KO, ZH-CN), 259 unit + 51 instrumented tests
 - [x] **v2.0.0** — transport abstraction, NFC HCE ISO 7816-4, multi-profile, identity rotation, audit log, SPKI pinning, encrypted backup
-- [x] **v3.0.0** — iOS AuraCore companion, Wear OS pairing, Android Auto voice + biometric gate, F-Droid reproducible build
+- [x] **v3.0.0** — iOS AuraCore companion, Wear OS pairing, Android Auto voice + biometric gate, GitHub Releases APK distribution
 - [x] **v3.3.0** — full transport stack (BLE GATT, Wi-Fi Direct FOSS, NFC, LoRa opt-in), PQ crypto (ML-KEM-768, ML-DSA-65, PQXDH), differential privacy analytics, enterprise MDM, JaCoCo 60% floor
 - [x] **v4.0.0** — Noise_XX channel, MLS RFC 9420 rooms, Double Ratchet + SPQR, OHTTP RFC 9458, QUIC/HTTP3, OpenID4VP, ISO 18013-5 mdoc, W3C Verifiable Credentials, UWB FiRa 3.0, BLE Channel Sounding, Advanced Protection API; exchange success sheet; contacts history tab
 - [x] **v5.6** — dual-descriptor gesture enrollment, Android 17 ML-DSA-65 native Keystore, FIDO2 CredentialProvider + NFC CTAP2 relay, ZK-SNARK Groth16 gesture privacy, ARCore UWB-gated contact card, DIDComm v2 + ISO 18013-7, MPC 2-of-3 threshold audit signing, Privacy Pass relay rate-limiting, `did:peer:2` + `DidResolver`, ML Kit OCR business card import

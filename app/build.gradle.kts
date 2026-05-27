@@ -108,14 +108,12 @@ android {
         }
     }
 
-    // Phase 6.2: transport flavor dimension.
+    // Transport flavor dimension.
     //
     // gms  (default) — uses Google Nearby Connections (requires Play Services).
-    //                   Ships to Google Play. Current production variant.
+    //                   Primary variant; distributed as signed APK via GitHub Releases.
     // foss            — uses WifiDirectTransport (no GMS dependency).
-    //                   Eligible for F-Droid distribution.
-    //                   Requires Phase 6.2 to complete the NearbyExchangeService
-    //                   transport-injection refactor before foss is fully functional.
+    //                   For users who prefer a Google-free build.
     //
     // Build GMS variant:   ./gradlew assembleGmsRelease
     // Build FOSS variant:  ./gradlew assembleFossRelease
@@ -123,7 +121,7 @@ android {
     productFlavors {
         create("gms") {
             dimension = "transport"
-            // No applicationId suffix — GMS is the canonical Play Store variant.
+            // No applicationId suffix — GMS is the primary variant.
         }
         create("foss") {
             dimension = "transport"
@@ -194,7 +192,7 @@ android {
     // MediaPipe native libs are the dominant size contributor (~12-14 MB each).
     // A universal APK bundles all ABI slices together, pushing the total past
     // 30 MB. Per-ABI APKs (arm64-v8a ~20 MB, armeabi-v7a ~16 MB) are each
-    // well under threshold and are what Play Store delivers to devices.
+    // well under threshold. Per-ABI slices are attached to GitHub Releases.
     //
     // NOTE: splits.abi.include takes over the role of ndk.abiFilters — AGP
     // throws a configuration error if both are set to the same ABIs. The ndk {}
@@ -206,7 +204,7 @@ android {
             //  1. bundleRelease avoids AGP bug #402800800 (ABI splits + AAB conflict).
             //  2. connectedAndroidTest tasks can install on the x86_64 CI emulator
             //     (which has no arm64/armeabi APK when splits are active).
-            //  3. Release APKs are still sliced per-ABI for Play Store distribution.
+            //  3. Release APKs are sliced per-ABI and attached to GitHub Releases.
             val taskNames = gradle.startParameter.taskNames
             val isAssembleRelease = taskNames.any { t ->
                 t.contains("assemble", ignoreCase = true) &&

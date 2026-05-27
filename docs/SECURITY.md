@@ -95,7 +95,7 @@ flowchart LR
     shrink --> sign{KEYSTORE_PATH set?}
     sign -- yes --> signed[Signed APK / AAB]
     sign -- no, e.g. CI --> unsigned[Unsigned APK]
-    signed --> artifact2[GitHub Release<br/>direct sideload / F-Droid]
+    signed --> artifact2[GitHub Release<br/>signed APK sideload]
     unsigned --> artifact[GH Actions artifact<br/>release validation only]
 ```
 

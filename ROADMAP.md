@@ -43,7 +43,7 @@ Remaining: R&D items D, H, M, N, P, Q, X (research-only, no code until trigger c
 | Localization | 365 strings × 7 locales — 100% coverage, human-reviewed |
 | Test suite | 623+ unit methods + 72 instrumented + 36 iOS tests — JaCoCo 60% branch floor |
 | CI | Green — lint + unit + JaCoCo + assembleRelease + APK size gate + iOS build/test |
-| Distribution | F-Droid reproducible build script + submission guide — live |
+| Distribution | GitHub Releases direct APK distribution |
 | Signing | PKCS12 keystore in GitHub Secrets — signed AAB confirmed |
 | iOS | AuraCore companion — ContactProfile, SasVerifier, AuraExchangeCoordinator, WireProtocol.swift, MultipeerTransport, NFCExchangeBootstrap; 36 tests |
 | Wear OS | Glance tile + Health Connect HRV + SasPinActivity + WristRaiseTrigger; Wear OS 7 production-complete |
@@ -189,7 +189,7 @@ See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-a
 | v2.1.0 | 2026-05-26 | JaCoCo 60%, l10n human review (313 strings), deeplink Add Contact sheet |
 | v3.0.0 | 2026-05-26 | iOS AuraCore companion (vCard 3.0, SAS, ECDH), iOS CI with cache + coverage |
 | v3.1.0 | 2026-05-26 | Wear OS pairing UI, Android Auto voice + biometric gate |
-| v3.2.0 | 2026-05-26 | Enterprise audit retention, F-Droid reproducible build + submission guide |
+| v3.2.0 | 2026-05-26 | Enterprise audit retention, GitHub Releases APK distribution |
 | v3.3.0 | 2026-05-26 | Tasks 1–44 complete — full transport stack, PQ crypto, room exchange, analytics |
 | v4.0.0 | 2026-05-26 | Tasks 45–66 complete — PQ identity, Noise/MLS/SPQR, OHTTP, OpenID4VP, mdoc, QUIC, UWB FiRa 3.0, BLE CS, continuous auth, Advanced Protection |
 | v5.0 | 2026-05-27 | Phase 5: User-defined gesture enrollment — dual temporal bone graph descriptors (T67-76) |
