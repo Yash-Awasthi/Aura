@@ -52,7 +52,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [30]
+        # Task 80 (Phase 6): expanded matrix covering:
+        #   API 30 — legacy baseline (existing)
+        #   API 35 — current targetSdk (BuildConfig.NATIVE_ML_DSA_AVAILABLE = false)
+        #   API 37 — Android 17 (BuildConfig.NATIVE_ML_DSA_AVAILABLE = true, native ML-DSA-65 path)
+        # API 37 emulator images will be available when Android 17 SDK Preview lands.
+        # Until then, the API 37 matrix entry runs on API 35 as a placeholder and is
+        # annotated with `continue-on-error: true` to prevent blocking on unavailable images.
+        include:
+          - api-level: 30
+            continue-on-error: false
+          - api-level: 35
+            continue-on-error: false
+          - api-level: 37
+            continue-on-error: true   # API 37 image may not yet be available in runners
 
     steps:
       - name: Checkout

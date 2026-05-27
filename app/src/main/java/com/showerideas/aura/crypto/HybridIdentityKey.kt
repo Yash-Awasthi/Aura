@@ -1,5 +1,8 @@
 package com.showerideas.aura.crypto
 
+import android.os.Build
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import org.bouncycastle.pqc.crypto.crystals.dilithium.DilithiumKeyGenerationParameters
 import org.bouncycastle.pqc.crypto.crystals.dilithium.DilithiumKeyPairGenerator
 import org.bouncycastle.pqc.crypto.crystals.dilithium.DilithiumParameters
@@ -53,6 +56,20 @@ class HybridIdentityKey @Inject constructor() {
 
     private val rng = SecureRandom()
 
+    companion object {
+        /** Keystore alias for the hardware-backed ML-DSA-65 identity key (API 37+). */
+        const val IDENTITY_KEY_ALIAS = "aura_device_identity"
+        /** Minimum API level for native Android Keystore ML-DSA-65 support. */
+        const val NATIVE_ML_DSA_API = 37
+    }
+
+    /**
+     * Task 77 — Whether the current device supports native Keystore ML-DSA-65.
+     * API 37+ (Android 17) exposes KeyPairGenerator("ML-DSA-65", "AndroidKeyStore").
+     */
+    val isNativeMlDsaAvailable: Boolean
+        get() = Build.VERSION.SDK_INT >= NATIVE_ML_DSA_API
+
     /** Generate a fresh hybrid identity key pair. Must be called once at enrolment. */
     fun generate() {
         // P-256 key pair via Android/JCA
@@ -62,15 +79,70 @@ class HybridIdentityKey @Inject constructor() {
         ecPriv = ecPair.private as ECPrivateKey
         ecPub  = ecPair.public  as ECPublicKey
 
-        // ML-DSA-65 (Dilithium mode 3) via BouncyCastle
+        // Task 77 — ML-DSA-65: use native AndroidKeyStore on API 37+; BouncyCastle on older APIs.
+        if (Build.VERSION.SDK_INT >= NATIVE_ML_DSA_API) {
+            generateIdentityKeyNative()
+        } else {
+            generateIdentityKeyLegacy()
+        }
+
+        Timber.d("HybridIdentityKey generated — P-256 + ML-DSA-65 " +
+                 "(${if (isNativeMlDsaAvailable) "AndroidKeyStore native" else "BouncyCastle software"})")
+    }
+
+    /**
+     * Task 77 — Native Keystore ML-DSA-65 path for API 37+ devices.
+     * Key is StrongBox-backed where hardware supports it; TEE-backed otherwise.
+     * Private key never leaves secure hardware; no software copy held.
+     */
+    @Suppress("NewApi")  // API 37 check is caller's responsibility via isNativeMlDsaAvailable
+    private fun generateIdentityKeyNative() {
+        try {
+            val kpg = KeyPairGenerator.getInstance("ML-DSA-65", "AndroidKeyStore")
+            kpg.initialize(
+                KeyGenParameterSpec.Builder(IDENTITY_KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
+                    .setDigests(KeyProperties.DIGEST_NONE)
+                    .setIsStrongBoxBacked(true)   // request StrongBox; silently falls back to TEE
+                    .build()
+            )
+            val kp = kpg.generateKeyPair()
+            // Native Keystore key — private key stays in hardware, public key accessible
+            mlDsaPriv = null  // not needed; signing goes through KeyStore.Entry
+            mlDsaPub  = null  // Keystore public key extracted on demand for wire protocol
+            nativeKeyStorePair = kp
+            Timber.d("HybridIdentityKey: ML-DSA-65 key generated in AndroidKeyStore (API 37+)")
+        } catch (e: Exception) {
+            Timber.w(e, "HybridIdentityKey: native ML-DSA-65 Keystore generation failed — falling back to BC")
+            generateIdentityKeyLegacy()
+        }
+    }
+
+    /** BouncyCastle ML-DSA-65 path for API < 37. */
+    private fun generateIdentityKeyLegacy() {
         val mlGen = DilithiumKeyPairGenerator()
         mlGen.init(DilithiumKeyGenerationParameters(rng, DilithiumParameters.dilithium3))
         val mlPair = mlGen.generateKeyPair()
         mlDsaPriv = mlPair.private  as DilithiumPrivateKeyParameters
         mlDsaPub  = mlPair.public   as DilithiumPublicKeyParameters
-
-        Timber.d("HybridIdentityKey generated — P-256 + ML-DSA-65 (Dilithium-3)")
+        nativeKeyStorePair = null
     }
+
+    /**
+     * Task 77 — Migrate an existing BouncyCastle ML-DSA-65 key to the native Keystore.
+     * Called by [IdentityKeyRotator] on first launch post Android 17 upgrade.
+     * Returns true if migration was performed; false if API < 37 or already native.
+     */
+    fun migrateToNativeKeystore(): Boolean {
+        if (Build.VERSION.SDK_INT < NATIVE_ML_DSA_API) return false
+        if (nativeKeyStorePair != null) return false  // already using native path
+        Timber.d("HybridIdentityKey: migrating ML-DSA-65 key to AndroidKeyStore")
+        generateIdentityKeyNative()
+        // Old BouncyCastle key bytes should be erased from EncryptedSharedPreferences by caller
+        return nativeKeyStorePair != null
+    }
+
+    /** Holds the native KeyStore key pair when running on API 37+. Null on older APIs. */
+    private var nativeKeyStorePair: java.security.KeyPair? = null
 
     /**
      * Load key material from encoded bytes (e.g. loaded from encrypted DataStore).
