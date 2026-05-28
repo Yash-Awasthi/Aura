@@ -76,8 +76,8 @@ class DualBoneGraphTrackerTest {
         // Result: A.motionProfile[0..13] ≈ +1.0 (slow pairs),
         //         B.motionProfile[0..13] ≈ -1.0 (fast alternating pairs) → ≥14 diffs > 0.05.
         val slowSlice = TestLandmarkFactory.slowRotation().subList(0, 15)
-        val fastPos = FloatArray(CameraHandEmbedder.EMBEDDING_SIZE) { i -> (i + 1) * 0.02f }
-        val fastNeg = FloatArray(CameraHandEmbedder.EMBEDDING_SIZE) { i -> -(i + 1) * 0.02f }
+        val fastPos = FloatArray(DualBoneGraphTracker.EMBEDDING_SIZE) { i -> (i + 1) * 0.02f }
+        val fastNeg = FloatArray(DualBoneGraphTracker.EMBEDDING_SIZE) { i -> -(i + 1) * 0.02f }
         val hybrid = slowSlice + List(45) { k -> if (k % 2 == 0) fastPos.copyOf() else fastNeg.copyOf() }
         assertEquals(60, hybrid.size)
 
