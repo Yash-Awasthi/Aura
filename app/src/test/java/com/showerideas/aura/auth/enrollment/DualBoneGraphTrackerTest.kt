@@ -69,16 +69,19 @@ class DualBoneGraphTrackerTest {
     }
 
     @Test fun `A and B descriptors are never merged or averaged`() {
-        // Frames 0-14 = slow rotation, frames 15-59 = fast flick
-        // Build a hybrid: first 15 slow, next 45 fast
-        val slow = TestLandmarkFactory.slowRotation()
-        val fast = TestLandmarkFactory.fastFlick(deltaPerFrame = 0.5f)
-        val hybrid = slow.subList(0, 15) + fast.subList(0, 45)
+        // Window A covers frames 0-44 (slow[0..14] + fast[0..29]).
+        // Window B covers frames 15-59 (fast[0..44]).
+        // Use strictly alternating anti-parallel frames for the fast section so that
+        // cosine(fast[k], fast[k+1]) = -1.0 for every k (regardless of scale).
+        // Result: A.motionProfile[0..13] ≈ +1.0 (slow pairs),
+        //         B.motionProfile[0..13] ≈ -1.0 (fast alternating pairs) → ≥14 diffs > 0.05.
+        val slowSlice = TestLandmarkFactory.slowRotation().subList(0, 15)
+        val fastPos = FloatArray(CameraHandEmbedder.EMBEDDING_SIZE) { i -> (i + 1) * 0.02f }
+        val fastNeg = FloatArray(CameraHandEmbedder.EMBEDDING_SIZE) { i -> -(i + 1) * 0.02f }
+        val hybrid = slowSlice + List(45) { k -> if (k % 2 == 0) fastPos.copyOf() else fastNeg.copyOf() }
         assertEquals(60, hybrid.size)
 
         val (descA, descB) = tracker.extract(hybrid)
-        // A covers 0-44 (slow + transition), B covers 15-59 (transition + fast)
-        // Motion profiles should differ significantly due to different temporal content
         val motionDiff = descA.motionProfile.zip(descB.motionProfile.toList())
             .count { (a, b) -> Math.abs(a - b) > 0.05f }
         assertTrue("A and B motion profiles should differ for mixed-motion gesture", motionDiff > 5)

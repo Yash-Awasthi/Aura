@@ -139,12 +139,16 @@ class VcIssuer @Inject constructor() {
     private fun derToRawEcSig(der: ByteArray): ByteArray {
         var i = 2
         val rLen = der[i + 1].toInt() and 0xFF; i += 2
-        val r = der.copyOfRange(i, i + rLen); i += rLen
+        val rBytes = der.copyOfRange(i, i + rLen); i += rLen
         val sLen = der[i + 1].toInt() and 0xFF; i += 2
-        val s = der.copyOfRange(i, i + sLen)
+        val sBytes = der.copyOfRange(i, i + sLen)
         val raw = ByteArray(64)
-        r.copyInto(raw, 32 - r.size.coerceAtMost(32))
-        s.copyInto(raw, 64 - s.size.coerceAtMost(32))
+        // DER INTEGERs may be 33 bytes (leading 0x00 to keep value positive).
+        // Trim to 32 bytes before right-aligning to avoid ArrayIndexOutOfBoundsException.
+        val rTrimmed = if (rBytes.size > 32) rBytes.copyOfRange(rBytes.size - 32, rBytes.size) else rBytes
+        val sTrimmed = if (sBytes.size > 32) sBytes.copyOfRange(sBytes.size - 32, sBytes.size) else sBytes
+        rTrimmed.copyInto(raw, 32 - rTrimmed.size)
+        sTrimmed.copyInto(raw, 64 - sTrimmed.size)
         return raw
     }
 
