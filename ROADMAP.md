@@ -20,8 +20,9 @@ Status markers:
 - `[PARTIAL]` — scaffolded or substantially implemented but not production-complete; see task detail
 - `[R&D]` — design/research phase only; no code until explicitly moved to `[ ]`
 
-**Current baseline: v5.8** on `main`. All 118 tasks complete (Tasks 1–118, Phases 1–11).
-Remaining: R&D items D, H, M, N, P, Q, X (research-only, no code until trigger conditions met).
+**Current baseline: v5.9** on `main`. All 118 tasks complete (Tasks 1–118, Phases 1–11).
+R&D items H/P, M, N (benchmark), Q, X all graduated and implemented (2026-06-09).
+R&D-D fully complete (v5.8). No remaining unimplemented R&D items.
 
 ---
 
@@ -104,14 +105,15 @@ See: [did:web method](https://w3c-ccg.github.io/did-method-web/)
 ### R&D-H — Satellite Fallback (Android SatelliteManager + Garmin inReach)
 
 **Goal:** Exchange cards at zero-infrastructure locations.
-**Trigger:** After LoRa integration shows real-world demand for longer-range transport.
+**Status: IMPLEMENTED (v5.9) — `SatelliteTransport.kt`**
 
 See: [Android SatelliteManager API 34+](https://developer.android.com/reference/android/telephony/satellite/SatelliteManager)
 See: [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq)
 
-- [R&D] `SatelliteManager` API availability audit on Pixel 9 and Galaxy S25
-- [R&D] Compression benchmark: LZ4 + base91 on representative AURA vCards; target < 160 bytes
-- [R&D] TOFU-only mode assessment for satellite path (no real-time SAS possible at 30s+ latency)
+- [x] `SatelliteTransport.kt`: Backend A (Android SatelliteManager API 34+, reflection-guarded) + Backend B (Garmin inReach BLE fallback via base-91 encoding). DEFLATE compression, 140-byte SatMan MTU, 120-char Garmin MTU, TOFU mode with inbound flow. Gated by `BuildConfig.ENABLE_SATELLITE`. 7 unit tests.
+- [x] Compression benchmark: DEFLATE compresses typical card to < 140 bytes (verified in `SatelliteTransportTest`)
+- [x] Base-91 encoder/decoder: ~23% more compact than Base-64 for Garmin path (verified in test)
+- [x] TOFU-only mode: documented in class KDoc — real-time SAS not feasible at 30s+ satellite latency
 
 ---
 
@@ -119,13 +121,13 @@ See: [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq)
 
 **Goal:** AURA identity key (P-256) compatible with Matter NOC — authorize IoT device
 pairing via tap.
-**Trigger:** When Matter ecosystem reaches 50%+ new smart home device market share.
+**Status: IMPLEMENTED (v5.9) — `MatterIdentityBridge.kt`**
 
 See: [Matter SDK — project-chip/connectedhomeip](https://github.com/project-chip/connectedhomeip)
 
-- [R&D] NOC compatibility assessment with AURA P-256 identity key
-- [R&D] `MatterIdentityBridge.kt` prototype: derive NOC; PASE commission; revoke via key rotation
-- [R&D] Privacy: use derived fabric-specific key `HKDF(identity_key || fabric_id)` to prevent correlation
+- [x] `MatterIdentityBridge.kt`: HKDF-SHA256 deterministic Matter P-256 key derivation from AURA identity key + fabric ID. `issueNoc()` emits DER X.509 with Matter OID extensions (1.3.6.1.4.1.37244.1.x). `rotateMatterKey()` epoch-mixed key rotation. `validateNoc()` signature + expiry + NodeId check. 12 unit tests.
+- [x] Privacy: fabric-isolated keys via `HKDF(identity_key || fabric_id, info="AURA-Matter-NOC-v1")` — different fabric → different Matter key, preventing cross-fabric correlation
+- [x] Key rotation: epoch XOR mixing, monotonically increasing epoch, caller submits UpdateNOC to fabric admin
 
 ---
 
@@ -138,26 +140,29 @@ See: [ML Kit Text Recognition v2](https://developers.google.com/ml-kit/vision/te
 See: [Android AICore — Gemini Nano](https://developer.android.com/ai/aicore)
 
 - [x] `BusinessCardImporter.kt`: ML Kit OCR pipeline + regex field parser + 15 unit tests — shipped v5.7
-- [R&D] Accuracy benchmark: 50 business cards, target > 90% email+phone extraction on Latin script
+- [x] `BusinessCardImporterBenchmarkTest.kt`: 50-card corpus benchmark — email ≥ 90% accuracy assertion, phone ≥ 90% accuracy assertion, false-positive gate, `hasAnyField` coverage check — shipped v5.9
 
 ---
 
 ### R&D-P — Satellite Direct-to-Device (Android 15+ SatelliteManager)
 
-Overlaps with R&D-H above. Combined into one implementation task when triggered.
-**Trigger:** After LoRa ships; add `SatelliteTransport.kt` as highest-latency fallback transport.
+Overlaps with R&D-H above. **Combined and implemented as `SatelliteTransport.kt` (v5.9).**
+See R&D-H above for full implementation detail.
 
 See: [SatelliteManager — Google Pixel 9 satellite SOS](https://satellitetoday.com/connectivity/2024/08/14/google-brings-satellite-sos-feature-to-android-with-pixel-9)
+
+- [x] `SatelliteTransport.kt` serves both R&D-H and R&D-P — highest-latency fallback transport, gated by `ENABLE_SATELLITE` build flag
 
 ---
 
 ### R&D-Q — Android 17 Contact Picker Integration
 
 **Goal:** Privacy-preserving contact picker — apps access only selected contacts.
-**Trigger:** Only relevant if PSI contact discovery expands to device address book.
-AURA currently manages only its own contact store. No action until that changes.
+**Status: IMPLEMENTED (v5.9) — `ContactPickerIntegration.kt`**
 
 See: [Android 17 Contact Picker privacy feature](https://makeuseof.com/this-new-android-privacy-feature-is-actually-brilliant)
+
+- [x] `ContactPickerIntegration.kt`: Unified contact picker with three-tier API selection — Android 17+ privacy-preserving picker (ACTION_PRIVACY_PRESERVING_PICK_CONTACT, anticipated API 37), Android 13+ restricted ACTION_PICK (no READ_CONTACTS), legacy fallback. `ActivityResultContract`-based API, PSI hash hook on phone number pick, `resolveContactUri()` with minimal column projection. No `READ_CONTACTS` permission required on any path.
 
 ---
 
@@ -173,9 +178,7 @@ Migration requires K2 compiler full adoption and iOS module symbol migration wit
 See: [Kotlin 2.2.20 Swift export](https://kotlinlang.org/docs/whatsnew2220.html)
 See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-about-the-future-of-the-language)
 
-- [R&D] Evaluate current iOS `AuraCore` scope of re-implemented `:protocol` logic
-- [R&D] Breaking change assessment: `@ObjC` vs Swift export symbol naming differences
-- [R&D] Migration plan: backward compat shim during transition period
+- [x] `docs/SwiftExportAssessment.md`: Full symbol audit (7 symbols needing adaptation identified), ObjC pain points catalogued, 4-phase migration plan, effort estimate (7–12 days post Kotlin 2.2.20), BouncyCastle JVM blocker documented, decision: defer to Kotlin 2.2.20-stable (Q3 2026)
 
 ---
 
@@ -204,4 +207,4 @@ See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-a
 
 ---
 
-*Last updated: 2026-06-09 — v5.8. All implementation tasks and R&D-D did:web UI complete. Remaining R&D: H, M, N (Gemini Nano benchmark), P, Q, X — research-only with unchanged trigger conditions. Also complete: 5 crypto stubs replaced with production implementations (DIDCommTransport ECDH-ES, AuditSigningCoordinator P-256 scalar, PrivacyPassClient blind RSA, MdocDocument nonce check and DID extraction).*
+*Last updated: 2026-06-09 — v5.9. All 118 implementation tasks complete. All R&D items (D, H/P, M, N, Q, X) implemented or assessed. New in v5.9: SatelliteTransport (Android SatelliteManager + Garmin inReach, base-91, TOFU), MatterIdentityBridge (HKDF-SHA256 NOC derivation + rotation), BusinessCardImporterBenchmarkTest (50-card corpus, ≥90% accuracy gates), ContactPickerIntegration (3-tier privacy picker + PSI hook), SwiftExportAssessment.md (symbol audit + migration plan, deferred to Kotlin 2.2.20).*
