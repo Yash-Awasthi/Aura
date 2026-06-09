@@ -91,7 +91,7 @@ class GestureCoachTest {
         whenever(gestureLibrary.listSlots()).thenReturn(listOf(
             GestureLibrary.GestureSlot("id1", "Wave", now, sampleCount = 5)
         ))
-        val gradient = coach.computeLocalGradientStub()
+        val gradient = coach.computeLocalQualityGradient()
         assertTrue("Gradient must be in [0, 1]", gradient in 0f..1f)
     }
 }

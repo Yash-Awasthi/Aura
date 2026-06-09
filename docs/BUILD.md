@@ -20,7 +20,7 @@ The Gradle wrapper (`./gradlew`) is committed, so you do not need a system-wide 
 ## 2. Clone & first build
 
 ```bash
-git clone https://github.com/showerideas/Aura.git
+git clone https://github.com/Yash-Awasthi/Aura.git
 cd Aura
 ./gradlew assembleDebug
 ```
@@ -106,9 +106,9 @@ There are intentionally only two: `debug` and `release`. We have not added stagi
 
 | Variant | App-id | versionName | Logging | Minify | Signing |
 |---|---|---|---|---|---|
-| debug | `com.showerideas.aura.debug` | `4.0.0-debug` | `BuildConfig.ENABLE_LOGGING=true` | off | debug keystore |
-| foss | `com.showerideas.aura` | `4.0.0-foss` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
-| release | `com.showerideas.aura` | `4.0.0` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
+| debug | `com.showerideas.aura.debug` | `5.8.0-debug` | `BuildConfig.ENABLE_LOGGING=true` | off | debug keystore |
+| foss | `com.showerideas.aura` | `5.8.0-foss` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
+| release | `com.showerideas.aura` | `5.8.0` | `BuildConfig.ENABLE_LOGGING=false` | R8 + resource shrink | env-var driven |
 
 `Timber.plant(DebugTree())` is gated on `ENABLE_LOGGING`, so the release APK does not emit logs.
 

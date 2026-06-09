@@ -130,13 +130,13 @@ class GestureCoach @Inject constructor(
     fun totalAdviceRounds(): Int = adviceGeneratedCount.get()
 
     /**
-     * Federated gradient stub — privacy-safe local quality summary.
+     * Local quality gradient (privacy-safe) — privacy-safe local quality summary.
      *
      * Computes mean sampleCount normalized to [0.0, 1.0] (max = 10 samples),
      * Laplace-noised with ε=1.0 (matching Task 49 DifferentialPrivacyEngine).
      * This will be the "gradient update" in a future federated averaging round.
      */
-    fun computeLocalGradientStub(): Float {
+    fun computeLocalQualityGradient(): Float {
         val slots = gestureLibrary.listSlots()
         if (slots.isEmpty()) return 0f
         val meanSamples = slots.map { it.sampleCount }.average().toFloat()

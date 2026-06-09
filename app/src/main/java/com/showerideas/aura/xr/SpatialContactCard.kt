@@ -15,8 +15,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Task 101 — Spatial contact card Composable for Android XR.
@@ -59,12 +67,32 @@ fun SpatialContactCard(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Avatar placeholder — replaced by actual avatar bitmap in full impl
-            Spacer(
+            // Initials avatar — colour derived from identity key hash
+            val initials = displayName.trim().split(" ")
+                .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                .joinToString("")
+                .ifEmpty { "?" }
+            val hashColor = Color(0xFF000000.toInt() or (identityKeyHash.take(6)
+                .padEnd(6, '0').toLong(16).toInt() or 0xFF404040.toInt()))
+            val textMeasurer = rememberTextMeasurer()
+            Canvas(
                 modifier = Modifier
                     .size(64.dp)
                     .clip(CircleShape)
-            )
+            ) {
+                drawCircle(color = hashColor)
+                val textLayout = textMeasurer.measure(
+                    text = initials,
+                    style = TextStyle(color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                )
+                drawText(
+                    textLayoutResult = textLayout,
+                    topLeft = Offset(
+                        (size.width  - textLayout.size.width)  / 2f,
+                        (size.height - textLayout.size.height) / 2f
+                    )
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 

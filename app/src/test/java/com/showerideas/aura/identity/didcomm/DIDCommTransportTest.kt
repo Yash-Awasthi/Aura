@@ -19,7 +19,7 @@ import java.util.UUID
  * Covers:
  *   1. DIDCommMessage data class invariants (type constants, expiry logic).
  *   2. ExchangeRequestBody.toBodyMap() key correctness.
- *   3. DIDCommTransport send+receive round-trip (anoncrypt stub path).
+ *   3. DIDCommTransport send+receive round-trip (anoncrypt — ECDH-ES + AES-256-GCM).
  *   4. DIDCommTransport.buildExchangeRequest() message construction.
  *   5. Message expiry detection.
  *
@@ -128,7 +128,7 @@ class DIDCommTransportTest {
         assertTrue(ttlActual <= 60L + 1 && ttlActual >= 59L)
     }
 
-    // ── Send + Receive round-trip ─────────────────────────────────────────────
+    // ── Send + Receive round-trip (ECDH-ES anoncrypt) ──────────────────────────
 
     @Test
     fun `send then receive round-trip decrypts message correctly`() = runBlocking {
