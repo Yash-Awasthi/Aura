@@ -86,6 +86,9 @@
         <action
             android:id="@+id/action_settings_to_backup"
             app:destination="@id/backupFragment" />
+        <action
+            android:id="@+id/action_settings_to_did_web_publish"
+            app:destination="@id/didWebPublishFragment" />
     </fragment>
 
     <fragment
@@ -137,5 +140,11 @@
         android:id="@+id/backupFragment"
         android:name="com.showerideas.aura.ui.settings.BackupFragment"
         android:label="Backup &amp; Restore" />
+
+    <!-- R&D-D: did:web DID Document publishing -->
+    <fragment
+        android:id="@+id/didWebPublishFragment"
+        android:name="com.showerideas.aura.ui.settings.DidWebPublishFragment"
+        android:label="Publish DID Document" />
 
 </navigation>

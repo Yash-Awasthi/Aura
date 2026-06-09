@@ -22,8 +22,8 @@ android {
         applicationId = "com.showerideas.aura"
         minSdk = 26           // BLE + Nearby Connections baseline
         targetSdk = 35
-        versionCode = 4
-        versionName = "4.0.0"
+        versionCode = 57
+        versionName = "5.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

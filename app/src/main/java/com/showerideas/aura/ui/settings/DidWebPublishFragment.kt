@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.showerideas.aura.R
 import com.showerideas.aura.databinding.FragmentDidWebPublishBinding
 import com.showerideas.aura.identity.DidWebPublisher
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,7 +54,7 @@ class DidWebPublishFragment : Fragment() {
         val domain = binding.etDomain.text?.toString()?.trim() ?: ""
 
         if (!isValidDomain(domain)) {
-            binding.tilDomain.error = "Enter a valid domain (e.g. yash.dev)"
+            binding.tilDomain.error = getString(R.string.did_web_domain_error)
             return
         }
         binding.tilDomain.error = null
@@ -64,7 +65,7 @@ class DidWebPublishFragment : Fragment() {
             .getString("ec_pubkey_hex", null)
 
         if (publicKeyHex == null) {
-            showStatus("No identity key found. Complete profile setup first.", isError = true)
+            showStatus(getString(R.string.did_web_no_key), isError = true)
             return
         }
 
@@ -76,10 +77,10 @@ class DidWebPublishFragment : Fragment() {
                 Timber.i("DidWebPublishFragment: published $did")
                 binding.tvResultDid.text = did
                 binding.btnCopyDid.visibility = View.VISIBLE
-                showStatus("Published successfully", isError = false)
+                showStatus(getString(R.string.did_web_success), isError = false)
             }.onFailure { e ->
                 Timber.e(e, "DidWebPublishFragment: publish failed")
-                showStatus("Publish failed: ${e.message}", isError = true)
+                showStatus("${getString(R.string.did_web_btn_publish)} failed: ${e.message}", isError = true)
             }
         }
     }
@@ -89,7 +90,7 @@ class DidWebPublishFragment : Fragment() {
         val clipboard = requireContext()
             .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText("DID", did))
-        Toast.makeText(requireContext(), "DID copied to clipboard", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), getString(R.string.did_web_copied), Toast.LENGTH_SHORT).show()
     }
 
     private fun setLoading(loading: Boolean) {

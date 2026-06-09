@@ -11,29 +11,27 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Header -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Publish DID Document"
+            android:text="@string/did_web_publish_title"
             android:textAppearance="?attr/textAppearanceHeadlineSmall"
             android:layout_marginBottom="8dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Make your AURA identity resolvable at https://yourdomain.com/.well-known/did.json"
+            android:text="@string/did_web_publish_subtitle"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:layout_marginBottom="24dp" />
 
-        <!-- Domain input -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilDomain"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Domain (e.g. yash.dev)"
+            android:hint="@string/did_web_domain_hint"
             android:layout_marginBottom="16dp"
             app:startIconDrawable="@android:drawable/ic_menu_myplaces">
 
@@ -47,15 +45,13 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Publish button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPublish"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Publish DID Document"
+            android:text="@string/did_web_btn_publish"
             android:layout_marginBottom="16dp" />
 
-        <!-- Progress indicator -->
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressPublish"
             android:layout_width="wrap_content"
@@ -65,7 +61,6 @@
             android:layout_marginBottom="16dp"
             app:indicatorSize="48dp" />
 
-        <!-- Status message -->
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="match_parent"
@@ -74,7 +69,6 @@
             android:visibility="gone"
             android:layout_marginBottom="16dp" />
 
-        <!-- Result DID (shown after success) -->
         <TextView
             android:id="@+id/tvResultDid"
             android:layout_width="match_parent"
@@ -84,13 +78,12 @@
             android:textIsSelectable="true"
             android:layout_marginBottom="8dp" />
 
-        <!-- Copy DID button (shown after success) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnCopyDid"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Copy DID"
+            android:text="@string/did_web_btn_copy_did"
             android:visibility="gone" />
 
     </LinearLayout>
