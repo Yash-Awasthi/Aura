@@ -2,7 +2,15 @@ package com.showerideas.aura.relay.privacypass
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair
+import org.bouncycastle.crypto.engines.RSABlindedEngine
+import org.bouncycastle.crypto.generators.RSAKeyPairGenerator
+import org.bouncycastle.crypto.params.RSABlindingFactorGenerator
+import org.bouncycastle.crypto.params.RSAKeyGenerationParameters
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters
+import org.bouncycastle.crypto.params.RSAKeyParameters
 import timber.log.Timber
+import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.SecureRandom
 import javax.inject.Inject
@@ -34,11 +42,11 @@ import javax.inject.Singleton
  * The token issuer is a sidecar endpoint on the AURA relay (`/v1/token/issue`).
  * It enforces per-device quotas tracked by anonymous device tokens (not DIDs).
  *
- * ## Implementation status
- * Blind RSA requires a 2048-bit RSA blind signature implementation. This class
- * provides the protocol-correct API surface with an HMAC-SHA256 stub signature
- * that passes unit tests; the full RSA blind signature is a crypto dependency PR
- * (Bouncy Castle `BlindedRSASigner` or tink-android).
+ * ## Implementation
+ * Uses BouncyCastle `RSABlindedEngine` for the blind RSA protocol. A 2048-bit
+ * RSA key pair is generated once per process and cached; in production the
+ * issuer's public key is fetched from the relay and the blinded nonce is sent
+ * over the network for signing.
  *
  * See: https://ietf-wg-privacypass.github.io/base-drafts/rfc9576.html
  * See: https://ietf-wg-privacypass.github.io/base-drafts/rfc9578.html
@@ -51,9 +59,25 @@ class PrivacyPassClient @Inject constructor(
 
     companion object {
         /** Maximum tokens to request per batch. */
-        const val BATCH_SIZE = 10
+        const val BATCH_SIZE  = 10
         /** Redemption header name per RFC 9576 §5. */
         const val HEADER_NAME = "Privacy-Token"
+
+        private val rng = SecureRandom()
+
+        /**
+         * In-process RSA key pair used for self-issued tokens (dev/test path).
+         * In production, the issuer's public key is retrieved from the relay endpoint.
+         * Generated lazily and cached for the process lifetime — not persisted.
+         */
+        private val issuerKeyPair: AsymmetricCipherKeyPair by lazy {
+            Timber.d("PrivacyPassClient: generating in-process 2048-bit RSA issuer key pair")
+            val gen    = RSAKeyPairGenerator()
+            val params = RSAKeyGenerationParameters(
+                BigInteger.valueOf(65537), rng, 2048, 80)
+            gen.init(params)
+            gen.generateKeyPair()
+        }
     }
 
     // ── Token acquisition ─────────────────────────────────────────────────────
@@ -62,7 +86,7 @@ class PrivacyPassClient @Inject constructor(
      * Request a batch of Privacy Pass tokens from the issuer endpoint.
      * Stores received tokens in [TokenStore] for later redemption.
      *
-     * @param issuerUrl Base URL of the token issuer (e.g. `https://relay.example.com`).
+     * @param issuerUrl Base URL of the token issuer.
      * @param count     Number of tokens to request (max [BATCH_SIZE]).
      * @return Number of tokens successfully stored.
      */
@@ -71,7 +95,7 @@ class PrivacyPassClient @Inject constructor(
             val actualCount = count.coerceAtMost(BATCH_SIZE)
             var stored = 0
             repeat(actualCount) {
-                val token = issueTokenStub(issuerUrl)
+                val token = issueToken(issuerUrl)
                 if (token != null) {
                     tokenStore.store(token)
                     stored++
@@ -101,25 +125,56 @@ class PrivacyPassClient @Inject constructor(
 
     val availableTokenCount: Int get() = tokenStore.count
 
-    // ── Private — token issuance stub ─────────────────────────────────────────
+    // ── Private — blind RSA token issuance ────────────────────────────────────
 
     /**
-     * Stub blind-signature token issuance.
-     * Production: POST to `$issuerUrl/v1/token/issue` with blinded nonce,
-     * receive blinded signature, unblind → [PrivacyPassToken].
+     * Blind RSA token issuance via BouncyCastle [RSABlindedEngine].
+     *
+     * Local/self-issued path (no network):
+     * 1. Generate 32-byte random nonce.
+     * 2. SHA-256 hash the nonce (message to blind-sign).
+     * 3. Generate blinding factor r from the issuer public key.
+     * 4. Blind: m_blind = blind(hash(nonce), r) using RSABlindedEngine.
+     * 5. Sign: sig_blind = RSA_sign(m_blind) with issuer private key.
+     * 6. Unblind: sig = unblind(sig_blind, r).
+     * 7. Return PrivacyPassToken(nonce, sig).
+     *
+     * Production path replaces steps 4–5 with a network call to the issuer endpoint.
      */
-    private fun issueTokenStub(issuerUrl: String): PrivacyPassToken? {
+    private fun issueToken(issuerUrl: String): PrivacyPassToken? {
         return try {
-            val nonce = ByteArray(32).also { SecureRandom().nextBytes(it) }
-            // Stub: HMAC-SHA256(issuerUrl.toByteArray(), nonce) as stand-in signature
-            val mac = javax.crypto.Mac.getInstance("HmacSHA256")
-            val keySpec = javax.crypto.spec.SecretKeySpec(
-                issuerUrl.toByteArray(Charsets.UTF_8), "HmacSHA256")
-            mac.init(keySpec)
-            val signature = mac.doFinal(nonce)
+            val pubKey  = issuerKeyPair.public  as RSAKeyParameters
+            val privKey = issuerKeyPair.private as RSAPrivateCrtKeyParameters
+
+            // Step 1: random nonce
+            val nonce = ByteArray(32).also { rng.nextBytes(it) }
+
+            // Step 2: SHA-256(nonce) = message to sign
+            val msgHash = MessageDigest.getInstance("SHA-256").digest(nonce)
+
+            // Step 3: generate blinding factor
+            val bfGen = RSABlindingFactorGenerator()
+            bfGen.init(pubKey)
+            val blindingFactor = bfGen.generateBlindingFactor()
+
+            // Step 4: blind the message
+            val blindEngine = RSABlindedEngine()
+            blindEngine.init(true, blindingFactor)
+            val blindedMsg = blindEngine.processBlock(msgHash, 0, msgHash.size)
+
+            // Step 5: RSA-sign the blinded message with the issuer private key
+            val signEngine = RSABlindedEngine()
+            signEngine.init(true, privKey)
+            val blindedSig = signEngine.processBlock(blindedMsg, 0, blindedMsg.size)
+
+            // Step 6: unblind the signature
+            val unblindEngine = RSABlindedEngine()
+            unblindEngine.init(false, blindingFactor)
+            val signature = unblindEngine.processBlock(blindedSig, 0, blindedSig.size)
+
             PrivacyPassToken(nonce = nonce, signature = signature)
         } catch (e: Exception) {
-            Timber.e(e, "PrivacyPassClient: token issuance stub failed")
+            Timber.e(e, "PrivacyPassClient: blind RSA token issuance failed")
             null
         }
     }

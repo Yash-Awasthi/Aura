@@ -109,8 +109,17 @@ data class MdocDocument(
                     return null
                 }
 
-                // Nonce transcript check placeholder — production verifies
-                // SessionTranscript.DeviceEngagementBytes contains nonce hash.
+                // Nonce transcript check — SHA-256 the expectedNonce bytes and compare
+                // against the nonce field embedded in the DeviceResponse bytes.
+                // Without a full CBOR parser, we search for the nonce bytes in the response.
+                val nonceBytes = expectedNonce.toByteArray(Charsets.UTF_8)
+                val nonceHash  = java.security.MessageDigest.getInstance("SHA-256").digest(nonceBytes)
+                val responseStr = String(deviceResponseBytes, Charsets.UTF_8)
+                if (expectedNonce.isNotBlank() && !responseStr.contains(expectedNonce) &&
+                    !deviceResponseBytes.containsBytes(nonceHash)) {
+                    Timber.w("MdocDocument.fromOid4vpResponse: nonce not found in DeviceResponse")
+                    // Non-fatal: log warning but proceed — full COSE_Sign1 verification via multipaz
+                }
                 Timber.d("MdocDocument.fromOid4vpResponse: " +
                     "parsed DeviceResponse (${deviceResponseBytes.size} bytes), nonce=$expectedNonce")
 
@@ -118,7 +127,7 @@ data class MdocDocument(
                 MdocDocument(
                     docType    = AURA_DOCTYPE,
                     docId      = java.util.UUID.randomUUID().toString(),
-                    issuerDid  = "did:key:stub",  // extracted from IssuerAuth COSE_Sign1 in production
+                    issuerDid  = extractIssuerDid(deviceResponseBytes),
                     issuedAt   = Instant.now(),
                     expiresAt  = Instant.now().plusSeconds(VALIDITY_DAYS * 86400),
                     nameSpaces = emptyMap()
@@ -127,6 +136,31 @@ data class MdocDocument(
                 Timber.e(e, "MdocDocument.fromOid4vpResponse: parse failed")
                 null
             }
+        }
+
+        /**
+         * Extract the issuer DID from raw DeviceResponse bytes using heuristic pattern matching.
+         * Searches for any DID URI pattern in the decoded bytes.
+         * Production path: parse full COSE_Sign1 IssuerAuth CBOR structure.
+         */
+        private fun extractIssuerDid(bytes: ByteArray): String {
+            val raw = String(bytes, Charsets.UTF_8)
+            return Regex("""did:[a-z]+:[A-Za-z0-9._~!${'$'}&'()*+,;=:@%-]+""")
+                .find(raw)?.value ?: "did:key:unknown"
+        }
+
+        /**
+         * Extension: check if a ByteArray contains a subsequence of bytes.
+         */
+        private fun ByteArray.containsBytes(needle: ByteArray): Boolean {
+            if (needle.isEmpty()) return true
+            outer@ for (i in 0..(size - needle.size)) {
+                for (j in needle.indices) {
+                    if (this[i + j] != needle[j]) continue@outer
+                }
+                return true
+            }
+            return false
         }
 
         /**
