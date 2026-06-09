@@ -30,7 +30,7 @@ R&D-D fully complete (v5.8). No remaining unimplemented R&D items.
 
 | Layer | State |
 |---|---|
-| Core app | v5.6 — all 118 tasks complete |
+| Core app | v5.9 — all 118 tasks + all R&D items complete |
 | Gesture gate | MediaPipe Hands + temporal classifier + dual-descriptor temporal enrollment (Phase 5): 2s/60-frame capture, open-palm anchor, Window A (frames 0–44) + Window B (frames 15–59), 107-float compound descriptors, AND-logic cosine similarity ≥ 0.85 matching. ZK-SNARK Groth16 proof of match (Phase 8, enterprise opt-in). AR mode gesture confirmation via ARCore + UWB gate (Phase 9). |
 | Transport | Google Nearby Connections (GMS) + Wi-Fi Direct (FOSS) + BLE GATT (BLE 6.2 SCI) + NFC HCE + QR relay + LoRa (opt-in: requires Meshtastic app + ENABLE_LORA=true build flag) |
 | NFC | HCE ISO 7816-4 full impl + NDEF tap + reader mode + session token bootstrap |
@@ -204,6 +204,8 @@ See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-a
 | v5.5 | 2026-05-27 | Phase 10: DIDComm v2 messaging + ISO 18013-7 async mDL presentation |
 | v5.6 | 2026-05-27 | Phase 11: MPC 2-of-3 threshold audit signing + Privacy Pass relay rate limiting |
 | v5.7 | 2026-05-27 | R&D-D graduated: DidResolver (did:key · did:peer:2 · did:web) + encodePeer2Did. R&D-N graduated: BusinessCardImporter ML Kit OCR pipeline. FIDO2 PasskeyGestureGateActivity fully wired (T84). |
+| v5.8 | 2026-06-09 | R&D-D partial graduate: did:web publishing UI (DidWebPublisher + DidWebPublishFragment + settings wiring). 5 crypto stubs replaced with RFC-compliant implementations (DIDCommTransport ECDH-ES, AuditSigningCoordinator P-256 scalar, PrivacyPassClient blind RSA, MdocDocument nonce + DID extraction). Comprehensive audit: version sync 5.7→5.8, JaCoCo CI comment fix, doc URL fixes, SpatialContactCard initials avatar, GestureCoach method rename. |
+| v5.9 | 2026-06-09 | All remaining R&D items graduated: SatelliteTransport (Android SatelliteManager API 34+ + Garmin inReach base-91, TOFU, DEFLATE), MatterIdentityBridge (HKDF-SHA256 NOC derivation + rotation + validation), BusinessCardImporterBenchmarkTest (50-card corpus ≥90% accuracy), ContactPickerIntegration (3-tier privacy picker + PSI hook, wired in ContactsFragment + ContactsViewModel), SwiftExportAssessment.md. Satellite toggle wired in Settings. |
 
 ---
 

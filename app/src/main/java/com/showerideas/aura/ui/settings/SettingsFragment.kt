@@ -53,6 +53,7 @@ class SettingsFragment : Fragment() {
         wireWearSection()
         wireAboutSection()
         wireIdentitySection()
+        wireSatelliteSection()
     }
 
     private fun wireAuthSection() {
@@ -193,8 +194,7 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    private fun wireAboutSection()
-        wireIdentitySection() {
+    private fun wireAboutSection() {
         binding.tvVersion.text = BuildConfig.VERSION_NAME
         binding.rowPrivacy.setOnClickListener {
             try {
@@ -213,6 +213,30 @@ class SettingsFragment : Fragment() {
     private fun wireIdentitySection() {
         binding.rowPublishDid?.setOnClickListener {
             findNavController().navigate(R.id.action_settings_to_did_web_publish)
+        }
+    }
+
+    // R&D-H/P: Satellite transport toggle
+    private fun wireSatelliteSection() {
+        val switchSat = binding.switchSatelliteTransport ?: return
+
+        // Show the section only when the build includes ENABLE_SATELLITE=true
+        val satBuildEnabled = runCatching {
+            BuildConfig::class.java.getField("ENABLE_SATELLITE").getBoolean(null)
+        }.getOrDefault(false)
+
+        binding.sectionSatellite?.visibility = if (satBuildEnabled) View.VISIBLE else View.GONE
+        if (!satBuildEnabled) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.satelliteTransportEnabled.collect { enabled ->
+                    if (switchSat.isChecked != enabled) switchSat.isChecked = enabled
+                }
+            }
+        }
+        switchSat.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setSatelliteTransportEnabled(isChecked)
         }
     }
 

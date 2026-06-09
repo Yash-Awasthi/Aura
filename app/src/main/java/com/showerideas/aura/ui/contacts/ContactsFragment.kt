@@ -8,6 +8,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.view.MenuProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -22,6 +23,8 @@ import com.showerideas.aura.utils.shareVCard
 import com.showerideas.aura.utils.toVCardBundle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ContactsFragment : Fragment() {
@@ -31,6 +34,26 @@ class ContactsFragment : Fragment() {
 
     private val viewModel: ContactsViewModel by viewModels()
     private lateinit var adapter: ContactsAdapter
+
+    // R&D-Q: ContactPickerIntegration — registered before onViewCreated per Jetpack rules
+    @Inject lateinit var contactPickerIntegration: ContactPickerIntegration
+    private lateinit var contactPickerLauncher: ActivityResultLauncher<Unit>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Must register before onViewCreated (ActivityResultLauncher lifecycle requirement)
+        contactPickerLauncher = contactPickerIntegration.registerLauncher(this) { picked ->
+            picked ?: return@registerLauncher
+            Timber.d("ContactsFragment: address book pick — name=%s email=%s phone=%s",
+                picked.displayName, picked.email, picked.phoneNumber)
+            viewModel.importFromAddressBook(picked)
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.contact_imported, picked.displayName ?: picked.email ?: "contact"),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -89,6 +112,11 @@ class ContactsFragment : Fragment() {
                                 "aura_contacts.vcf"
                             )
                         }
+                        true
+                    }
+                    // R&D-Q: import a single contact from the device address book
+                    R.id.action_import_from_contacts -> {
+                        contactPickerIntegration.launch(contactPickerLauncher)
                         true
                     }
                     else -> false

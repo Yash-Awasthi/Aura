@@ -22,8 +22,8 @@ android {
         applicationId = "com.showerideas.aura"
         minSdk = 26           // BLE + Nearby Connections baseline
         targetSdk = 35
-        versionCode = 57
-        versionName = "5.7.0"
+        versionCode = 58
+        versionName = "5.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -65,6 +65,12 @@ android {
 
         // Phase 9 (T98) — AR exchange overlay (enterprise feature flag).
         buildConfigField("boolean", "ENABLE_AR_EXCHANGE", "false")
+
+        // R&D-H/P — Satellite transport via Android SatelliteManager + Garmin inReach BLE.
+        // Default false. Enable via gradle.properties: aura.satellite.enabled=true
+        val satelliteEnabled = (project.findProperty("aura.satellite.enabled") as? String)
+            ?.toBooleanStrictOrNull() ?: false
+        buildConfigField("boolean", "ENABLE_SATELLITE", "$satelliteEnabled")
 
     }
 

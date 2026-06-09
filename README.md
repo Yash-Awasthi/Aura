@@ -54,7 +54,7 @@
 
 ---
 
-## ✨ Feature set — v5.8
+## ✨ Feature set — v5.9
 
 | 🔐 Post-quantum crypto | 🌐 Transport | 🎯 Auth & UX |
 |---|---|---|
@@ -66,6 +66,7 @@
 | MLS group key agreement | QUIC/HTTP3 (Cronet) | Multi-profile Personal/Work |
 | Sealed sender envelopes | Tor SOCKS5 (Orbot) | Room mode (star topology) |
 | SPKI certificate pinning | LoRa via Meshtastic (opt-in) | Wear OS 7 Glance tile |
+| Matter NOC derivation (HKDF) | Satellite (SatManager + Garmin, opt-in) | Address book import (PSI hook) |
 
 | 🪪 Identity & privacy | 📊 Enterprise & analytics | 🧪 Quality |
 |---|---|---|
@@ -204,9 +205,9 @@ Each exchange opens a **fresh post-quantum hybrid KEM** (ML-KEM-768+X25519), der
 - [x] **v3.0.0** — iOS AuraCore companion, Wear OS pairing, Android Auto voice + biometric gate, GitHub Releases APK distribution
 - [x] **v3.3.0** — full transport stack (BLE GATT, Wi-Fi Direct FOSS, NFC, LoRa opt-in), PQ crypto (ML-KEM-768, ML-DSA-65, PQXDH), differential privacy analytics, enterprise MDM, JaCoCo 60% floor
 - [x] **v4.0.0** — Noise_XX channel, MLS RFC 9420 rooms, Double Ratchet + SPQR, OHTTP RFC 9458, QUIC/HTTP3, OpenID4VP, ISO 18013-5 mdoc, W3C Verifiable Credentials, UWB FiRa 3.0, BLE Channel Sounding, Advanced Protection API; exchange success sheet; contacts history tab
+- [x] **v5.9** — All R&D items shipped: `SatelliteTransport` (Android SatelliteManager API 34+ + Garmin inReach BLE, base-91, TOFU, DEFLATE, Settings toggle); `MatterIdentityBridge` (HKDF-SHA256 NOC derivation, rotation, validation); `BusinessCardImporterBenchmarkTest` (50-card corpus ≥90% accuracy); `ContactPickerIntegration` (3-tier privacy picker, wired in Contacts menu + ViewModel); `SwiftExportAssessment.md`; versionCode 58
 - [x] **v5.8** — DIDCommTransport real ECDH-ES key agreement (HKDF-SHA256); AuditSigningCoordinator P-256 scalar derivation via BouncyCastle; PrivacyPassClient full blind RSA (RSABlindedEngine); MdocDocument DID extraction + nonce check; did:web publishing UI (R&D-D complete)
 - [x] **v5.6** — dual-descriptor gesture enrollment, Android 17 ML-DSA-65 native Keystore, FIDO2 CredentialProvider + NFC CTAP2 relay, ZK-SNARK Groth16 gesture privacy, ARCore UWB-gated contact card, DIDComm v2 + ISO 18013-7, MPC 2-of-3 threshold audit signing, Privacy Pass relay rate-limiting, `did:peer:2` + `DidResolver`, ML Kit OCR business card import
-- [ ] **R&D pipeline** — satellite fallback (SatelliteManager), Matter/Thread IoT identity bridge, Android 17 contact picker integration, Kotlin 2.2 Swift export
 
 ---
 

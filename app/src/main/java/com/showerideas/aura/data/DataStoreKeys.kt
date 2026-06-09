@@ -12,5 +12,7 @@ object DataStoreKeys {
 val GESTURE_GATE_OPEN = booleanPreferencesKey("gesture_gate_open")
     /** route relay traffic through Tor/Orbot when true. */
     val TOR_PROXY_ENABLED = booleanPreferencesKey("tor_proxy_enabled")
+    /** enable satellite transport (SatelliteTransport) when true; requires ENABLE_SATELLITE build flag. */
+    val SATELLITE_TRANSPORT_ENABLED = booleanPreferencesKey("satellite_transport_enabled")
 }
 
