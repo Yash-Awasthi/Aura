@@ -36,7 +36,7 @@ jobs:
   # ---------------------------------------------------------------------------
   # Job 1: Unit tests + coverage gate
   # Compiles app + test sources, runs 87 test classes with parallel forks,
-  # generates JaCoCo XML and enforces the 40% branch-coverage floor.
+  # generates JaCoCo XML and enforces the 60% branch-coverage floor.
   # ---------------------------------------------------------------------------
   test:
     name: Unit tests & coverage

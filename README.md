@@ -6,9 +6,9 @@
 
 *Two phones. One gesture. Local-first. Post-quantum.*
 
-[![CI](https://github.com/showerideas/Aura/actions/workflows/ci.yml/badge.svg)](https://github.com/showerideas/Aura/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/showerideas/Aura?color=6E56CF&label=release)](https://github.com/showerideas/Aura/releases/latest)
-[![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/showerideas/Aura/releases/latest)
+[![CI](https://github.com/Yash-Awasthi/Aura/actions/workflows/ci.yml/badge.svg)](https://github.com/Yash-Awasthi/Aura/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/showerideas/Aura?color=6E56CF&label=release)](https://github.com/Yash-Awasthi/Aura/releases/latest)
+[![Download APK](https://img.shields.io/badge/download-APK-3DDC84?logo=android&logoColor=white)](https://github.com/Yash-Awasthi/Aura/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Min SDK](https://img.shields.io/badge/min%20SDK-26%20%E2%80%A2%20Android%208.0-3DDC84?logo=android&logoColor=white)](https://developer.android.com/about/versions/oreo)
 [![Target SDK](https://img.shields.io/badge/target%20SDK-35%20%E2%80%A2%20Android%2015-3DDC84?logo=android&logoColor=white)](https://developer.android.com/about/versions/15)
@@ -40,7 +40,7 @@
 
 | | |
 |---|---|
-| 📥 **Install** | [`Releases → latest`](https://github.com/showerideas/Aura/releases/latest) — side-load the APK |
+| 📥 **Install** | [`Releases → latest`](https://github.com/Yash-Awasthi/Aura/releases/latest) — side-load the APK |
 | 📖 **Docs hub** | [`/docs`](docs/README.md) — engineering record |
 | 🏛 **Architecture** | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
 | 🔐 **Security model** | [`docs/SECURITY.md`](docs/SECURITY.md) |
@@ -54,7 +54,7 @@
 
 ---
 
-## ✨ Feature set — v5.6
+## ✨ Feature set — v5.8
 
 | 🔐 Post-quantum crypto | 🌐 Transport | 🎯 Auth & UX |
 |---|---|---|
@@ -180,7 +180,7 @@ Full wire frame specification (frame structure, key sizes, version history v1–
 
 ## 🚀 Get started in 60 seconds
 
-1. **Install** the APK from [Releases](https://github.com/showerideas/Aura/releases/latest) (enable *Install unknown apps* for your browser/file-manager first).
+1. **Install** the APK from [Releases](https://github.com/Yash-Awasthi/Aura/releases/latest) (enable *Install unknown apps* for your browser/file-manager first).
 2. **Set up your profile** — name, phone, email, company, title, website, bio, avatar.
 3. **Record your gesture** — hold the record button, perform your chosen hand pose once. Or bind unlock to your fingerprint instead.
 4. **Activate** — open AURA and tap the Exchange button. Both phones need to be in the Exchange screen simultaneously.
@@ -204,6 +204,7 @@ Each exchange opens a **fresh post-quantum hybrid KEM** (ML-KEM-768+X25519), der
 - [x] **v3.0.0** — iOS AuraCore companion, Wear OS pairing, Android Auto voice + biometric gate, GitHub Releases APK distribution
 - [x] **v3.3.0** — full transport stack (BLE GATT, Wi-Fi Direct FOSS, NFC, LoRa opt-in), PQ crypto (ML-KEM-768, ML-DSA-65, PQXDH), differential privacy analytics, enterprise MDM, JaCoCo 60% floor
 - [x] **v4.0.0** — Noise_XX channel, MLS RFC 9420 rooms, Double Ratchet + SPQR, OHTTP RFC 9458, QUIC/HTTP3, OpenID4VP, ISO 18013-5 mdoc, W3C Verifiable Credentials, UWB FiRa 3.0, BLE Channel Sounding, Advanced Protection API; exchange success sheet; contacts history tab
+- [x] **v5.8** — DIDCommTransport real ECDH-ES key agreement (HKDF-SHA256); AuditSigningCoordinator P-256 scalar derivation via BouncyCastle; PrivacyPassClient full blind RSA (RSABlindedEngine); MdocDocument DID extraction + nonce check; did:web publishing UI (R&D-D complete)
 - [x] **v5.6** — dual-descriptor gesture enrollment, Android 17 ML-DSA-65 native Keystore, FIDO2 CredentialProvider + NFC CTAP2 relay, ZK-SNARK Groth16 gesture privacy, ARCore UWB-gated contact card, DIDComm v2 + ISO 18013-7, MPC 2-of-3 threshold audit signing, Privacy Pass relay rate-limiting, `did:peer:2` + `DidResolver`, ML Kit OCR business card import
 - [ ] **R&D pipeline** — satellite fallback (SatelliteManager), Matter/Thread IoT identity bridge, Android 17 contact picker integration, Kotlin 2.2 Swift export
 

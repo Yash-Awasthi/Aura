@@ -98,6 +98,29 @@
                 android:textSize="12sp" />
         </LinearLayout>
 
+        <!-- R&D-D: did:web identity publishing -->
+        <LinearLayout
+            android:id="@+id/row_publish_did"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_publish_did"
+                android:textColor="@color/on_surface"
+                android:textSize="15sp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/did_web_publish_subtitle"
+                android:textColor="@color/on_surface_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/row_exchange_history"
             android:layout_width="match_parent"

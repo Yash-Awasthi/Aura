@@ -561,4 +561,17 @@
     <string name="restriction_desc_pre_fill_phone">Work phone number pre-populated.</string>
     <string name="restriction_desc_pre_fill_profile_type">Profile type: WORK or PERSONAL. Default: WORK for managed devices.</string>
 
+
+    <!-- R&D-D: did:web publishing -->
+    <string name="did_web_publish_title">Publish DID Document</string>
+    <string name="did_web_publish_subtitle">Make your AURA identity resolvable at https://yourdomain.com/.well-known/did.json</string>
+    <string name="did_web_domain_hint">Domain (e.g. yash.dev)</string>
+    <string name="did_web_domain_error">Enter a valid domain (e.g. yash.dev)</string>
+    <string name="did_web_btn_publish">Publish DID Document</string>
+    <string name="did_web_btn_copy_did">Copy DID</string>
+    <string name="did_web_success">Published successfully</string>
+    <string name="did_web_no_key">No identity key found. Complete profile setup first.</string>
+    <string name="did_web_copied">DID copied to clipboard</string>
+    <string name="settings_publish_did">Publish DID Document</string>
+
 </resources>

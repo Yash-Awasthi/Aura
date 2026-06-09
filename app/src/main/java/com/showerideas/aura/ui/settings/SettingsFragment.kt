@@ -52,6 +52,7 @@ class SettingsFragment : Fragment() {
         wireDataSection()
         wireWearSection()
         wireAboutSection()
+        wireIdentitySection()
     }
 
     private fun wireAuthSection() {
@@ -192,7 +193,8 @@ class SettingsFragment : Fragment() {
         }
     }
 
-    private fun wireAboutSection() {
+    private fun wireAboutSection()
+        wireIdentitySection() {
         binding.tvVersion.text = BuildConfig.VERSION_NAME
         binding.rowPrivacy.setOnClickListener {
             try {
@@ -204,6 +206,13 @@ class SettingsFragment : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+        }
+    }
+
+    // R&D-D: Identity section — did:web publishing
+    private fun wireIdentitySection() {
+        binding.rowPublishDid?.setOnClickListener {
+            findNavController().navigate(R.id.action_settings_to_did_web_publish)
         }
     }
 

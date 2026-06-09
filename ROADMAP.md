@@ -4,7 +4,7 @@
 > Written as a strictly ordered sequence of engineering tasks for a software team.
 > Tasks are sorted by dependency: each task may depend on those above it.
 > References are cited inline where they are relevant — there is no separate reference table.
-> Last updated: 2026-05-27 | v5.7 baseline
+> Last updated: 2026-06-09 | v5.8 baseline
 
 ---
 
@@ -20,7 +20,7 @@ Status markers:
 - `[PARTIAL]` — scaffolded or substantially implemented but not production-complete; see task detail
 - `[R&D]` — design/research phase only; no code until explicitly moved to `[ ]`
 
-**Current baseline: v5.6** on `main`. All 118 tasks complete (Tasks 1–118, Phases 1–11).
+**Current baseline: v5.8** on `main`. All 118 tasks complete (Tasks 1–118, Phases 1–11).
 Remaining: R&D items D, H, M, N, P, Q, X (research-only, no code until trigger conditions met).
 
 ---
@@ -72,6 +72,7 @@ Task specifications are preserved in git history (commits  through ).
 | 11 — MPC + Privacy Pass | v5.6 | ShamirSecretSharing 2-of-3 · AuditSigningCoordinator · PrivacyPassClient (RFC 9576) · TokenStore |
 | R&D-D (graduated) | v5.7 | DidResolver (did:key · did:peer:2 · did:web) · encodePeer2Did · did:peer:2 unit tests |
 | R&D-N (graduated) | v5.7 | BusinessCardImporter · ML Kit OCR pipeline · regex parser · 15 unit tests |
+| R&D-D partial graduate | v5.8 | did:web publishing UI · DidWebPublisher · DidWebPublishFragment · 6 unit tests |
 
 ---
 
@@ -96,7 +97,7 @@ See: [did:web method](https://w3c-ccg.github.io/did-method-web/)
 
 - [x] `did:peer:2` encode: AURA exchange public key as `did:peer:2.<base58(keyType+keyBytes)>` — shipped v5.7
 - [x] `DidResolver.kt`: resolves `did:key` (local), `did:web` (HTTP GET + cache), `did:peer:2` (decode) — shipped v5.7
-- [R&D] `did:web` publishing UI: Settings → Identity → "Publish DID Document"
+- [x] `did:web` publishing UI: Settings → Identity → "Publish DID Document" — shipped v5.8
 
 ---
 
@@ -203,4 +204,4 @@ See: [KMP 2.3 roadmap](https://medium.com/@androidlab/what-kotlin-2-3-tells-us-a
 
 ---
 
-*Last updated: 2026-05-27 — All Phases 5–11 (Tasks 67–118) complete and merged to main. v5.7 baseline. Remaining R&D: D (did:web UI), H, M, N (Gemini Nano benchmark), P, Q, X — research-only with unchanged trigger conditions.*
+*Last updated: 2026-06-09 — v5.8. All implementation tasks and R&D-D did:web UI complete. Remaining R&D: H, M, N (Gemini Nano benchmark), P, Q, X — research-only with unchanged trigger conditions. Also complete: 5 crypto stubs replaced with production implementations (DIDCommTransport ECDH-ES, AuditSigningCoordinator P-256 scalar, PrivacyPassClient blind RSA, MdocDocument nonce check and DID extraction).*
