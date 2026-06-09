@@ -27,6 +27,7 @@ import javax.inject.Inject
  * identity key and produces a rotation certificate for known peers.
  *
  * [setTorProxyEnabled] — routes relay traffic via Orbot.
+ * [setSatelliteTransportEnabled] — enables SatelliteTransport as last-resort fallback.
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -42,6 +43,9 @@ class SettingsViewModel @Inject constructor(
             AuthPreferences.DEFAULT_METHOD)
 
     val torProxyEnabled: StateFlow<Boolean> = authPreferences.torProxyEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val satelliteTransportEnabled: StateFlow<Boolean> = authPreferences.satelliteTransportEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun setAuthMethod(method: String) {
@@ -106,6 +110,22 @@ class SettingsViewModel @Inject constructor(
             } else {
                 relayClient.setAnonymizationProxy(null)
             }
+        }
+    }
+
+    // Satellite transport (R&D-H/P)
+
+    /**
+     * Enable or disable [SatelliteTransport] as the highest-latency last-resort fallback.
+     *
+     * The toggle is only meaningful when the build includes `ENABLE_SATELLITE=true`.
+     * On builds where the flag is false, the preference is stored but [SatelliteTransport]
+     * remains unavailable regardless of this setting.
+     */
+    fun setSatelliteTransportEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            authPreferences.setSatelliteTransportEnabled(enabled)
+            Timber.i("SettingsViewModel: satellite transport %s", if (enabled) "ENABLED" else "DISABLED")
         }
     }
 }

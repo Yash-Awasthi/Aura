@@ -223,6 +223,60 @@
         <View android:layout_width="match_parent" android:layout_height="1dp"
             android:layout_marginVertical="16dp" android:background="#222" />
 
+        <!-- R&D-H/P: SATELLITE TRANSPORT SECTION -->
+        <!-- Visible only on builds with ENABLE_SATELLITE=true (hidden programmatically) -->
+        <LinearLayout
+            android:id="@+id/section_satellite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginVertical="16dp" android:background="#222" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/settings_section_satellite"
+                android:textColor="@color/aura_purple_light"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="8dp">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_satellite_transport"
+                        android:textColor="@color/on_surface"
+                        android:textSize="15sp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/settings_satellite_transport_subtitle"
+                        android:textColor="@color/on_surface_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_satellite_transport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/settings_satellite_transport" />
+            </LinearLayout>
+        </LinearLayout>
+
         <!-- WEAR OS SECTION (Phase F1) -->
         <TextView
             android:layout_width="match_parent"

@@ -92,4 +92,30 @@ class ContactsViewModel @Inject constructor(
             contactRepository.saveDeduped(contact)
         }
     }
+
+    /**
+     * Import a contact picked from the device address book (R&D-Q).
+     *
+     * Converts a [ContactPickerIntegration.PickedContact] to a [Contact] and
+     * saves it via [ContactRepository.saveDeduped]. If the contact already exists
+     * (matched by email or phone), the existing record is updated rather than duplicated.
+     *
+     * The contact source is tagged "address_book" to distinguish from AURA exchanges.
+     */
+    fun importFromAddressBook(picked: ContactPickerIntegration.PickedContact) {
+        viewModelScope.launch {
+            val fields = buildMap<String, String> {
+                picked.displayName?.let { put("displayName", it) }
+                picked.email?.let { put("email", it) }
+                picked.phoneNumber?.let { put("phone", it) }
+            }
+            val contact = Contact.fromMap(
+                id         = UUID.randomUUID().toString(),
+                map        = fields,
+                endpointId = "address_book"
+            )
+            Timber.i("ContactsViewModel: importing address book contact %s", contact.displayName)
+            contactRepository.saveDeduped(contact)
+        }
+    }
 }

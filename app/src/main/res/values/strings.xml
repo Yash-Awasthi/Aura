@@ -574,4 +574,13 @@
     <string name="did_web_copied">DID copied to clipboard</string>
     <string name="settings_publish_did">Publish DID Document</string>
 
+    <!-- R&D-H/P: Satellite transport settings -->
+    <string name="settings_section_satellite">Satellite Transport</string>
+    <string name="settings_satellite_transport">Satellite Fallback</string>
+    <string name="settings_satellite_transport_subtitle">Use Android SatelliteManager / Garmin inReach as last-resort transport when all other channels are unavailable</string>
+
+    <!-- R&D-Q: Address book import -->
+    <string name="action_import_from_contacts">Import from Address Book</string>
+    <string name="contact_imported">%1$s added to contacts</string>
+
 </resources>

@@ -63,6 +63,15 @@ class AuthPreferences @Inject constructor(
         context.authPrefsDataStore.edit { it[DataStoreKeys.TOR_PROXY_ENABLED] = enabled }
     }
 
+    // Satellite transport preference (R&D-H/P)
+
+    val satelliteTransportEnabled: Flow<Boolean> = context.authPrefsDataStore.data
+        .map { it[DataStoreKeys.SATELLITE_TRANSPORT_ENABLED] ?: false }
+
+    suspend fun setSatelliteTransportEnabled(enabled: Boolean) {
+        context.authPrefsDataStore.edit { it[DataStoreKeys.SATELLITE_TRANSPORT_ENABLED] = enabled }
+    }
+
     // Gesture profile metadata (name, timestamp, presence)
     //
     // Stored in the same EncryptedSharedPreferences file as the embeddings so
