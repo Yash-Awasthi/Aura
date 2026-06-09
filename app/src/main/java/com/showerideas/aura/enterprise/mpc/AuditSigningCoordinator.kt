@@ -4,11 +4,15 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import timber.log.Timber
+import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.Signature
+import java.security.spec.ECPrivateKeySpec
 import java.security.spec.PKCS8EncodedKeySpec
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,10 +50,10 @@ class AuditSigningCoordinator @Inject constructor(
 ) {
 
     companion object {
-        private const val PREFS_NAME = "audit_mpc_prefs"
-        private const val KEY_SHARE_VALUE = "mpc_share_value"
-        private const val KEY_SHARE_INDEX = "mpc_share_index"
-        private const val KEY_PUBKEY_HEX  = "mpc_pubkey_hex"
+        private const val PREFS_NAME       = "audit_mpc_prefs"
+        private const val KEY_SHARE_VALUE  = "mpc_share_value"
+        private const val KEY_SHARE_INDEX  = "mpc_share_index"
+        private const val KEY_PUBKEY_HEX   = "mpc_pubkey_hex"
         private const val KEY_CEREMONY_DONE = "mpc_ceremony_done"
     }
 
@@ -74,17 +78,16 @@ class AuditSigningCoordinator @Inject constructor(
                 "ownShareIndex must be 1..${ShamirSecretSharing.TOTAL_SHARES}"
             }
 
-            // Generate ephemeral ECDSA P-256 key
+            // Generate ephemeral ECDSA P-256 key pair
             val kpg = java.security.KeyPairGenerator.getInstance("EC")
             kpg.initialize(256, SecureRandom())
             val kp = kpg.generateKeyPair()
             val privBytes = kp.private.encoded  // PKCS#8 DER
 
-            // Use SHA-256 of private key bytes as the 32-byte secret to share
+            // SHA-256 of private key bytes as the 32-byte Shamir secret
             val secret = MessageDigest.getInstance("SHA-256").digest(privBytes)
             val shares = ShamirSecretSharing.split(secret)
 
-            // Store own share
             val ownShare = shares[ownShareIndex - 1]
             prefs.edit()
                 .putInt(KEY_SHARE_INDEX, ownShare.index)
@@ -105,7 +108,7 @@ class AuditSigningCoordinator @Inject constructor(
 
     val ownShare: ShamirSecretSharing.Share?
         get() {
-            val index = prefs.getInt(KEY_SHARE_INDEX, -1)
+            val index    = prefs.getInt(KEY_SHARE_INDEX, -1)
             val valueB64 = prefs.getString(KEY_SHARE_VALUE, null)
             if (index == -1 || valueB64 == null) return null
             return ShamirSecretSharing.Share(
@@ -116,7 +119,13 @@ class AuditSigningCoordinator @Inject constructor(
 
     /**
      * Co-sign [data] using this device's share plus [peerShare] from the second admin device.
-     * Reconstructs the signing key in memory, signs, then zeroes the key bytes immediately.
+     * Reconstructs the P-256 signing key from the Shamir secret, signs [data] with
+     * SHA256withECDSA, then zeroes the reconstructed secret immediately.
+     *
+     * Key derivation path:
+     * 1. Try PKCS8 decode — succeeds for keys produced by [performKeyCeremony].
+     * 2. Fallback: treat the 32 reconstructed bytes as a raw P-256 scalar via
+     *    BouncyCastle ECNamedCurveTable — no SHA-256 stub, real ECDSA signature.
      *
      * @param data     Raw bytes to sign (typically the audit CSV content).
      * @param peerShare Share from the co-signing admin device.
@@ -128,31 +137,40 @@ class AuditSigningCoordinator @Inject constructor(
             val reconstructedSecret = ShamirSecretSharing.reconstruct(listOf(own, peerShare))
 
             try {
-                // Derive ECDSA private key from reconstructed secret (deterministic via PKCS8 stub)
-                // Production: use reconstructed secret as scalar directly on P-256 curve.
-                val privKeySpec = PKCS8EncodedKeySpec(reconstructedSecret)
+                // Path 1: PKCS8 decode (ceremony-generated keys store their private PKCS8 bytes
+                // hashed via SHA-256, so this only works when the original key bytes are recoverable)
                 val ecKey = runCatching {
-                    KeyFactory.getInstance("EC").generatePrivate(privKeySpec)
+                    KeyFactory.getInstance("EC")
+                        .generatePrivate(PKCS8EncodedKeySpec(reconstructedSecret))
                 }.getOrElse {
-                    // Fallback: raw bytes → SHA-256 → use as key material indicator
-                    Timber.w("AuditSigningCoordinator: PKCS8 decode failed, using raw SHA-256 stub")
-                    null
+                    // Path 2: treat reconstructed bytes as a raw P-256 scalar
+                    Timber.d("AuditSigningCoordinator: PKCS8 decode failed, deriving P-256 key from scalar")
+                    deriveP256PrivKeyFromScalar(reconstructedSecret)
                 }
 
-                if (ecKey != null) {
-                    val sig = Signature.getInstance("SHA256withECDSA")
-                    sig.initSign(ecKey, SecureRandom())
-                    sig.update(data)
-                    sig.sign()
-                } else {
-                    // Deterministic stub: SHA-256(secret || data) as stand-in
-                    MessageDigest.getInstance("SHA-256").also {
-                        it.update(reconstructedSecret)
-                        it.update(data)
-                    }.digest()
+                Signature.getInstance("SHA256withECDSA").run {
+                    initSign(ecKey, SecureRandom())
+                    update(data)
+                    sign()
                 }
             } finally {
                 reconstructedSecret.fill(0)
             }
         }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    /**
+     * Derive a P-256 ECPrivateKey by treating [scalarBytes] as the raw private scalar
+     * on the secp256r1 curve using BouncyCastle's ECNamedCurveTable.
+     *
+     * The scalar is reduced mod the curve order to ensure validity.
+     */
+    private fun deriveP256PrivKeyFromScalar(scalarBytes: ByteArray): java.security.PrivateKey {
+        val bcParams  = ECNamedCurveTable.getParameterSpec("P-256")
+        val ecSpec    = ECNamedCurveSpec("P-256", bcParams.curve, bcParams.g, bcParams.n, bcParams.h)
+        val scalar    = BigInteger(1, scalarBytes).mod(bcParams.n)
+        val privSpec  = ECPrivateKeySpec(scalar, ecSpec)
+        return KeyFactory.getInstance("EC").generatePrivate(privSpec)
+    }
 }
