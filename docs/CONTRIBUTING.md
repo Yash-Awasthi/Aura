@@ -73,7 +73,7 @@ If your change touches:
 ## 6. Reporting bugs / vulnerabilities
 
 - **Functional bug** → open an issue, include device model + Android version + redacted logcat.
-- **Security issue** → **do not** open a public issue. Open a private [GitHub Security Advisory](https://github.com/showerideas/Aura/security/advisories/new).
+- **Security issue** → **do not** open a public issue. Open a private [GitHub Security Advisory](https://github.com/Yash-Awasthi/Aura/security/advisories/new).
 
 ---
 

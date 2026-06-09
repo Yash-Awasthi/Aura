@@ -30,7 +30,7 @@
 
 | If you are… | Start here |
 |---|---|
-| 📱 Trying the app | Top-level [`README.md`](../README.md) + [latest release](https://github.com/showerideas/Aura/releases/latest) |
+| 📱 Trying the app | Top-level [`README.md`](../README.md) + [latest release](https://github.com/Yash-Awasthi/Aura/releases/latest) |
 | 🔐 Reviewing security | [`SECURITY.md`](SECURITY.md) → [`EXCHANGE_FLOW.md`](EXCHANGE_FLOW.md) → [`WIRE_PROTOCOL.md`](WIRE_PROTOCOL.md) → [`GESTURE_AUTH.md`](GESTURE_AUTH.md) |
 | 🛠 Contributing code | [`ARCHITECTURE.md`](ARCHITECTURE.md) → [`BUILD.md`](BUILD.md) → [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | 🧪 Auditing the project | [`AUDIT.md`](AUDIT.md) — every README claim cross-referenced to code |

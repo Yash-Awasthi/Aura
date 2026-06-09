@@ -152,6 +152,6 @@ linking requests to device identity (unlinkability guarantee from blind signatur
 
 ## 8. Audit / disclosure
 
-If you find a security issue please **do not** open a public issue. Open a private [GitHub Security Advisory](https://github.com/showerideas/Aura/security/advisories/new) with a description and ideally a reproduction. We will acknowledge within 72 hours.
+If you find a security issue please **do not** open a public issue. Open a private [GitHub Security Advisory](https://github.com/Yash-Awasthi/Aura/security/advisories/new) with a description and ideally a reproduction. We will acknowledge within 72 hours.
 
 We note any fixes in the relevant release notes and credit reporters who wish to be named.

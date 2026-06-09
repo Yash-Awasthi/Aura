@@ -181,7 +181,7 @@ ViewModels use `@HiltViewModel`. `AuraApplication` is annotated `@HiltAndroidApp
 | Min SDK | 26 | `app/build.gradle.kts` |
 | JVM target | 17 | `app/build.gradle.kts` |
 | `applicationId` | `com.showerideas.aura` (`.debug` suffix on debug) | `app/build.gradle.kts` |
-| `versionCode` / `versionName` | `4` / `4.0.0` | `app/build.gradle.kts` |
+| `versionCode` / `versionName` | `57` / `5.8.0` | `app/build.gradle.kts` |
 | `isMinifyEnabled` (release) | `true` | `app/build.gradle.kts` |
 | Room schema version | **11** | `AppDatabase` annotation |
 | Signing config | env-var driven (`KEYSTORE_BASE64` etc. in GitHub Secrets) | `app/build.gradle.kts` |

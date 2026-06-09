@@ -216,4 +216,4 @@ A cloud platform, a social network, or a surveillance product. AURA is infrastru
 ---
 
 *AURA — MIT licensed, open source, fully auditable.*
-*Source: https://github.com/showerideas/Aura*
+*Source: https://github.com/Yash-Awasthi/Aura*
